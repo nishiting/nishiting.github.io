@@ -1,0 +1,1018 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="胖子笑西风">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="随着智能设备的出现，我们正式进入了大数据时代。是个App，都不断的在收集个人的行为与数据。同时，智能设备的出现，使人们的行为发生了很大的变化，大量的线下服务走到线上，比如外卖、叫车、购物等。这么多的数据传输，使我们经常听到一个网站或者服务的QPS有多少多少。比如阿里云公布的2020年双11订单创建峰值是58.3万笔&#x2F;秒。显然，一台服务器是承受不了同时这么多的访问的。我们就能想到使用多台服务器来同时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多级分流">
+<meta property="og:url" content="http://www.3world.top/2023/01/29/%E5%A4%9A%E7%BA%A7%E5%88%86%E6%B5%81/index.html">
+<meta property="og:site_name" content="胖子笑西风">
+<meta property="og:description" content="随着智能设备的出现，我们正式进入了大数据时代。是个App，都不断的在收集个人的行为与数据。同时，智能设备的出现，使人们的行为发生了很大的变化，大量的线下服务走到线上，比如外卖、叫车、购物等。这么多的数据传输，使我们经常听到一个网站或者服务的QPS有多少多少。比如阿里云公布的2020年双11订单创建峰值是58.3万笔&#x2F;秒。显然，一台服务器是承受不了同时这么多的访问的。我们就能想到使用多台服务器来同时">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.3world.top/img/content/duoji/fl.jpg">
+<meta property="article:published_time" content="2023-01-29T02:00:00.000Z">
+<meta property="article:modified_time" content="2023-01-31T08:53:50.958Z">
+<meta property="article:author" content="胖子笑西风">
+<meta property="article:tag" content="DNS">
+<meta property="article:tag" content="负载均衡">
+<meta property="article:tag" content="CDN">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://www.3world.top/img/content/duoji/fl.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>多级分流 - 胖子笑西风</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"www.3world.top","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"ce2e798b1c31297dd7ece0242cac0a2b","google":null,"gtag":"G-MBPFGDQNG5","tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>胖子笑西风</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/content/duoji/duoji.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="多级分流"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-01-29 10:00" pubdate>
+          2023年1月29日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          16k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          134 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">多级分流</h1>
+            
+            <div class="markdown-body">
+              
+              <p>随着智能设备的出现，我们正式进入了大数据时代。是个App，都不断的在收集个人的行为与数据。同时，智能设备的出现，使人们的行为发生了很大的变化，大量的线下服务走到线上，比如外卖、叫车、购物等。这么多的数据传输，使我们经常听到一个网站或者服务的QPS有多少多少。比如阿里云公布的2020年双11订单创建峰值是58.3万笔/秒。显然，一台服务器是承受不了同时这么多的访问的。我们就能想到使用多台服务器来同时提供服务。<br>作为一个后端开发，我们知道，一个支撑几万用户的系统架构与一个支撑上千万用户的架构，在成本上来说，完全不是一个量级的。架构变得复杂之后，缓存、队列、网关、监控等非业务功能性的东西，成本也会变得很可观。<br><img src="/img/content/duoji/chengben.jpg" srcset="/img/loading.gif" lazyload alt="用户规模与开发成本"><br>自然，我们可以想到，如果请求可以尽可能少到达后端，那么后端的成本及复杂度可以大大的减少。成本与稳定性可以达到更有效的保证。<br>以秒杀为例，几百万的人同时在抢几百瓶的茅台，理论上流入到后端有效的流量可能只有几百。当然，我们不会控制的这么精确。<br><img src="/img/content/duoji/miaosha.jpg" srcset="/img/loading.gif" lazyload alt="秒杀流量"><br>后端流量是如此的，前端也是如此。一个请求从发出到得到响应中间要经过好几层，如果我们可以把流量在不同的级别中进行分流，那么，我们的总体成本将大大的减少。<br><img src="/img/content/duoji/liuliangfengliu.jpeg" srcset="/img/loading.gif" lazyload alt="流量分流"><br>要知道流量怎么进行分级分流，我们就得知道一个请求的从发出到得到响应，都经历了哪些。通常的当我们在浏览器中输入 <a href="http://www.3world.top/">www.3world.top</a> 时，需要DNS来帮助我们来做域名解析，我们来看域名解析这一步，能帮我们怎么分流。</p>
+<h1 id="DNS-域名解析-分流"><a href="#DNS-域名解析-分流" class="headerlink" title="DNS(域名解析)分流"></a>DNS(域名解析)分流</h1><p>我们开发中经常配置Host，比如我们需要把 <a href="http://www.3world.top/">www.3world.top</a> 映射到本地启动的服务器，那么需要添加一条Host记录</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">127.0.0.1		www.3world.top<br></code></pre></td></tr></table></figure>
+<p>这就让我们想象中的DNS是一本厚厚的字典，心想DNS服务要应付那么大的查询流量，还在从这么多的数据中查询出来ip地址，不容易啊。<br>但实际上世界根域名服务器的ZONE文件只有2MB大小，打印都能打印的出来，这就得我们不得不惊叹其巧妙的设计了。</p>
+<h2 id="DNS域名空间结构"><a href="#DNS域名空间结构" class="headerlink" title="DNS域名空间结构"></a>DNS域名空间结构</h2><p>整个互联网的域名空间结构为树结构。我们知道树结构通常来说叶子节点才是数据的主要存储点，非叶子节点主要起索引作用。这里主要有一个树高与节点大小的平衡问题。<br><img src="/img/content/duoji/dns.png" srcset="/img/loading.gif" lazyload alt="DNS域名空间结构"><br>DNS域名空间结构的根节点为根DNS服务器，在整个Internet上有13组根服务器，注意，这里是13组，不是13台。</p>
+<h3 id="顶级域名"><a href="#顶级域名" class="headerlink" title="顶级域名"></a>顶级域名</h3><p>根DNS服务器往下的第一级节点称为顶级域名。顶级域名最早的时候分为通用顶级域名(gTLD)和国家地区代码顶级域名(ccTLD)。在<a target="_blank" rel="noopener" href="http://www.iana.org/domains/root/db">http://www.iana.org/domains/root/db</a>中可以看到所有的顶级域名。</p>
+<h4 id="通用顶级域名"><a href="#通用顶级域名" class="headerlink" title="通用顶级域名"></a>通用顶级域名</h4><p>通用顶级域名主要有以下几种</p>
+<ul>
+<li>.com 商业组织</li>
+<li>.edu 教育机构</li>
+<li>.gov 政府部门</li>
+<li>.mil 军事部门</li>
+<li>.net 网络基础设施</li>
+<li>.org 非营利性组织</li>
+<li>.int 国际组织<h4 id="国家地区代码顶级域名"><a href="#国家地区代码顶级域名" class="headerlink" title="国家地区代码顶级域名"></a>国家地区代码顶级域名</h4>国家地区代码顶级域名一般取两位国家码，比如中国的cn,香港的hk,美国的us等。<h4 id="新通用顶级域名"><a href="#新通用顶级域名" class="headerlink" title="新通用顶级域名"></a>新通用顶级域名</h4>互联网名称与数字地址分配机构(ICANN)曾于2011年6月的新加坡会议上通过增设新通用顶级域名(New gTLD)的决议，并首次批准通用顶级域名可以使用多种语言字符表示。任何机构和个人都有权在2012年1月至5月向ICANN提交新通用顶级域名的申请。这就诞生了很多新的顶级域名。<br><img src="/img/content/duoji/%E6%96%B0%E9%A1%B6%E7%BA%A7%E5%9F%9F%E5%90%8D.png" srcset="/img/loading.gif" lazyload alt="新顶级域名"><h3 id="权威域名服务器"><a href="#权威域名服务器" class="headerlink" title="权威域名服务器"></a>权威域名服务器</h3>顶级域名的往下一个节点都是一个子域，比如3world.top是顶级域top的子域，taobao.com是顶级域com的子域。子域的服务器叫权威域名服务器。每个权威域名服务器可以及一个或者多个区域进行解析。权威域名服务器可以再往下分拆，拆成更细粒度的权威域服务器。直至叶子节点，得到IP地址。<h2 id="DNS解析过程"><a href="#DNS解析过程" class="headerlink" title="DNS解析过程"></a>DNS解析过程</h2><img src="/img/content/duoji/DNS%E8%A7%A3%E6%9E%90%E8%BF%87%E7%A8%8B.png" srcset="/img/loading.gif" lazyload alt="DNS解析过程"><br>当我们在浏览器中输入 <a href="http://www.3world.top/">www.3world.top</a> 客户端会先检查本地的DNS缓存。<br>本地DNS收到查询请求后，会按照“是否有 <a href="http://www.3world.top/">www.3world.top</a> 的权威服务器”→“是否有3world.top的权威服务器”→“是否有top的权威服务器”的顺序，依次查询自己的地址记录，如果都没有查询到，就会一直找到最后点号代表的根域名服务器为止。<br>现在假设本地DNS是全新的，上面不存在任何域名的权威服务器记录，所以当DNS查询请求一直查到根域名服务器之后，它将会得到“top的权威服务器”的地址记录，然后通过“top的权威服务器”，得到“3world.top的权威服务器”的地址记录，以此类推，最后找到能够解释 “<a target="_blank" rel="noopener" href="http://www.3world.top”/">www.3world.top”</a> 的权威服务器地址。<br>查询到DNS缓存之后，会缓存到本地DNS中。win7 ~ 11 的系统，默认 Windows DNS 缓存是 86400 秒(24小时)。<br>通过上面所述我们了解了域名怎么得到服务器地址，那怎么通过域名解析到进行分流呢。我们能想到最简单的方法</li>
+</ul>
+<p>1.一个域名解析服务返回多个IP，客户端根据算法选择<br>2.域名解析是个服务器，可以均衡的返回不同的服务器地址。</p>
+<h3 id="DNS解析记录类型"><a href="#DNS解析记录类型" class="headerlink" title="DNS解析记录类型"></a>DNS解析记录类型</h3><p>我们先说一下DNS常用的解析记录类型都有哪些。</p>
+<h4 id="A记录"><a href="#A记录" class="headerlink" title="A记录"></a>A记录</h4><p>A（Address）记录是用来指定主机名（或域名）对应的IP地址记录。</p>
+<h4 id="CNAME记录"><a href="#CNAME记录" class="headerlink" title="CNAME记录"></a>CNAME记录</h4><p>通常称别名解析，是主机名到主机名的映射。当需要将域名指向另一个域名，再由另一个域名提供 IP 地址，就需要添加 CNAME 记录，最常用到 CNAME的场景包括做CDN、企业邮箱、全局流量管理等。</p>
+<h4 id="NS记录"><a href="#NS记录" class="headerlink" title="NS记录"></a>NS记录</h4><p>如果需要把子域名交给其他DNS服务商解析，就需要添加NS记录（Name Server）。NS记录是域名服务器记录，用来指定该域名由哪个DNS服务器来进行解析。NS记录中的IP即为该DNS服务器的IP地址。大多数域名注册商默认用自己的NS服务器来解析用户的DNS记录。DNS服务器NS记录地址一般以以下的形式出现：ns1.domain.com、ns2.domain.com等。</p>
+<h4 id="MX记录"><a href="#MX记录" class="headerlink" title="MX记录"></a>MX记录</h4><p>MX（Mail Exchanger）记录是邮件交换记录，主要用于邮箱解析，在邮件系统发送邮件时根据收信人的地址后缀进行邮件服务器的定位。MX记录允许设置一个优先级，当多个邮件服务器可用时，会根据该值决定投递邮件的服务器。<br>MX记录的权重对 Mail 服务非常重要，当发送邮件时，Mail 服务器先对域名进行解析，查找 MX记录。先找权重数最小的服务器（比如说是 10），如果能连通，那么就将服务器发送过去；如果无法连通 MX 记录为 10 的服务器，才将邮件发送到权重更高的 mail 服务器上。<br>多种类型的DNS记录共存关系图如下</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>NS</th>
+<th>CNAME</th>
+<th>A</th>
+<th>MX</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NS</td>
+<td>不限</td>
+<td>不能共存</td>
+<td>不能共存</td>
+<td>不能共存</td>
+</tr>
+<tr>
+<td>CNAME</td>
+<td>不能共存</td>
+<td>不能共存</td>
+<td>不能共存</td>
+<td>不能共存</td>
+</tr>
+<tr>
+<td>A</td>
+<td>不能共存</td>
+<td>不能共存</td>
+<td>不限</td>
+<td>不限</td>
+</tr>
+<tr>
+<td>MX</td>
+<td>不能共存</td>
+<td>不能共存</td>
+<td>不限</td>
+<td>不限</td>
+</tr>
+</tbody></table>
+<p>如下图所示，在已有A记录的情况下，添加NS记录，系统会进行报错。<br><img src="/img/content/duoji/DNS%E8%AE%B0%E5%BD%95%E5%86%B2%E7%AA%81.png" srcset="/img/loading.gif" lazyload alt="DNS记录冲突"><br>知道DNS解析记录的类型之后，我们来看一下怎么通过DNS解析来实现负载均衡</p>
+<h2 id="DNS负载均衡"><a href="#DNS负载均衡" class="headerlink" title="DNS负载均衡"></a>DNS负载均衡</h2><h3 id="负载均衡实现方式"><a href="#负载均衡实现方式" class="headerlink" title="负载均衡实现方式"></a>负载均衡实现方式</h3><h4 id="通过A记录方式实现负载均衡"><a href="#通过A记录方式实现负载均衡" class="headerlink" title="通过A记录方式实现负载均衡"></a>通过A记录方式实现负载均衡</h4><table>
+<thead>
+<tr>
+<th>主机记录</th>
+<th>记录类型</th>
+<th>线路类型</th>
+<th>记录值</th>
+<th>TTL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>www</td>
+<td>A</td>
+<td>默认</td>
+<td>200.202.101.1</td>
+<td>600</td>
+</tr>
+<tr>
+<td>www</td>
+<td>A</td>
+<td>默认</td>
+<td>200.202.101.2</td>
+<td>600</td>
+</tr>
+<tr>
+<td>www</td>
+<td>A</td>
+<td>默认</td>
+<td>200.202.101.3</td>
+<td>600</td>
+</tr>
+<tr>
+<td>www</td>
+<td>A</td>
+<td>默认</td>
+<td>200.202.101.4</td>
+<td>600</td>
+</tr>
+</tbody></table>
+<p>同一个域名配置多个IP地址，解析返回得到的 IP 地址是轮询随机得到的 IP 地址，这样，本地DNS服务器会向客户端返回多个IP地址作为域名的查询结果，并且这些IP地址的排列顺序是轮换的。客户端一般会选择首个IP地址进行访问。<br>通过A记录方式实现负载均衡不会根据服务器负载和运行状况进行分配。</p>
+<h4 id="通过CNAME方式实现负载均衡"><a href="#通过CNAME方式实现负载均衡" class="headerlink" title="通过CNAME方式实现负载均衡"></a>通过CNAME方式实现负载均衡</h4><p>我们知道顶级域名有多个，当网站做大的时候，我们通常会把多个项级域名都买下来，指向同一个网站。比如<br><a target="_blank" rel="noopener" href="http://www.taobao.com/">www.taobao.com</a><br><a target="_blank" rel="noopener" href="http://www.taobao.cn/">www.taobao.cn</a><br><a target="_blank" rel="noopener" href="http://www.taobao.org/">www.taobao.org</a><br>都指向了淘宝网。而我们希望多对外域名统一作一个负载均衡。那么我们可以将多个域名指向同一个CNAME别名，再将CNAME别名指向多个A记录来进行负载均衡。</p>
+<h4 id="负载均衡器作为权威DNS服务器"><a href="#负载均衡器作为权威DNS服务器" class="headerlink" title="负载均衡器作为权威DNS服务器"></a>负载均衡器作为权威DNS服务器</h4><p>我们可以建立DNS服务器，通过godaddy等平台将注册自己的DNS服务器，再将域名映射一个NS记录到自己的DNS服务器。这里，自己的DNS服务器将实现负载均衡功能。</p>
+<h4 id="负载均衡器作为代理DNS服务器"><a href="#负载均衡器作为代理DNS服务器" class="headerlink" title="负载均衡器作为代理DNS服务器"></a>负载均衡器作为代理DNS服务器</h4><p>在这种方式下，负载均衡器被注册为一个域名空间的权威DNS服务器，而真正的权威域名服务器则部署在负载均衡器后面。所有的DNS请求都会先到达负载均衡器，由负载均衡器转发至真正的权威DNS服务器，然后修改权威DNS服务器返回的响应信息，从而实现负载均衡功能。<br>为实现这一过程，首先要将对外公布的权威DNS服务器的地址注册成负载均衡器上的VIP地址。真正的权威DNS服务器正常响应浏览器的DNS请求，返回域名解析结果列表，这个响应会先发送到负载均衡器，而负载均衡器会根据自己的策略选择一个性能最好的服务器IP并修改DNS服务器的应答信息，然后将应答信息转发给客户。负载均衡器只修改需要实现GSLB的域名的DNS查询响应，对其他请求透明转发，这样就不会影响整个域名空间的解析性能。</p>
+<h3 id="DNS负载均衡缺点"><a href="#DNS负载均衡缺点" class="headerlink" title="DNS负载均衡缺点"></a>DNS负载均衡缺点</h3><p>DNS负载均衡有一个很大的缺点就是延时性问题，在做出调度策略改变以后，由于DNS各级节点的缓存并不会及时的在客户端生效，而且DNS负载的调度策略比较简单，无法满足更复杂的业务需求。</p>
+<h1 id="CDN-内容分发网络-分流"><a href="#CDN-内容分发网络-分流" class="headerlink" title="CDN(内容分发网络)分流"></a>CDN(内容分发网络)分流</h1><p>抛却其他影响服务质量的因素，仅从网络传输的角度看，一个互联网系统的速度取决于以下四个因素。</p>
+<ul>
+<li>网站服务器的出口带宽。</li>
+<li>用户客户端的入口带宽。</li>
+<li>从网站到用户经过的不同运营商之间的互联节点的带宽</li>
+<li>从网站到用户的物理链路传输时延</li>
+</ul>
+<p>除了第2用户的入口带宽是由用户换一个更好的宽带才能改善之外，其余三个，我们可以通过构建一个离用户近的，带宽大的服务来实现。这个离用户近、带宽大的服务就是CDN。<br>CDN的工作流程为：<br><img src="/img/content/duoji/cdn.jpeg" srcset="/img/loading.gif" lazyload alt="CDN工作流程"></p>
+<ol>
+<li>当用户点击网站页面上的内容URL，经过本地DNS系统解析，DNS系统会最终将域名的解析权交给CNAME指向的CDN专用DNS服务器。</li>
+<li>CDN的DNS服务器将CDN的全局负载均衡设备IP地址返回用户。</li>
+<li>用户向CDN的全局负载均衡设备发起内容URL访问请求。</li>
+<li>CDN全局负载均衡设备根据用户IP地址，以及用户请求的内容URL，选择一台用户所属区域的区域负载均衡设备，告诉用户向这台设备发起请求。</li>
+<li>区域负载均衡设备会为用户选择一台合适的缓存服务器提供服务，选择的依据包括：根据用户IP地址，判断哪一台服务器距用户最近；根据用户所请求的URL中携带的内容名称，判断哪一台服务器上有用户所需内容；查询各个服务器当前的负载情况，判断哪一台服务器尚有服务能力。基于以上这些条件的综合分析之后，区域负载均衡设备会向全局负载均衡设备返回一台缓存服务器的IP地址。</li>
+<li>全局负载均衡设备把服务器的IP地址返回给用户。</li>
+<li>用户向缓存服务器发起请求，缓存服务器响应用户请求，将用户所需内容传送到用户终端。如果这台缓存服务器上并没有用户想要的内容，而区域均衡设备依然将它分配给了用户，那么这台服务器就要向它的上一级缓存服务器请求内容，直至追溯到网站的源服务器将内容拉到本地。<h1 id="客户端缓存"><a href="#客户端缓存" class="headerlink" title="客户端缓存"></a>客户端缓存</h1>当我们通过dns解析或者cdn解析拿到内容时，如果内容没变化，那么我们希望客户端能尽量的把数据缓存起来。客户端属于最边缘的计算载体，客户端缓存一是加快获取数据的速度，二是减轻CDN与服务器的压力。我们知道，缓存是否能够应用的好，就看缓存有什么样的刷新策略。根据不同的缓存策略，Http缓存可以分为以下几种。<h2 id="状态缓存"><a href="#状态缓存" class="headerlink" title="状态缓存"></a>状态缓存</h2>状态缓存是指不经过服务器，客户端直接根据缓存信息对目标网站的状态判断，以前只有301/Moved Permanently（永久重定向）这一种；后来在RFC6797中增加了HSTS（HTTP Strict Transport Security）机制，用于避免依赖301/302跳转HTTPS时可能产生的降级中间人劫持，这也属于另一种状态缓存。<h2 id="强制缓存"><a href="#强制缓存" class="headerlink" title="强制缓存"></a>强制缓存</h2><img src="/img/content/duoji/%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%BC%BA%E5%88%B6%E7%BC%93%E5%AD%98.png" srcset="/img/loading.gif" lazyload alt="客户端强制缓存.png"><br>Expires：http response的响应时间。<br>Cache-control：控制浏览器中页面缓存状态。<br>Last-Modified：浏览器最后一次请求服务端资源修改的日期。<h2 id="协商缓存"><a href="#协商缓存" class="headerlink" title="协商缓存"></a>协商缓存</h2></li>
+</ol>
+<h2 id=""><a href="#" class="headerlink" title=""></a><img src="/img/content/duoji/%E5%8D%8F%E5%95%86%E7%BC%93%E5%AD%98.png" srcset="/img/loading.gif" lazyload alt="协商缓存.png"></h2><p>tag/If-None-Match：url实体标签，类似于token，如果没有修改就返回状态码304，不会发送资源。<br>If-Modified-Since：再次请求服务端资源修改的日期，如果没有修改就返回状态码304，不会发送资源。<br>Cache-control设置了max-age与s-maxage值的话，Expires会被忽略，为了保证客户端能够获取到最新资源，建议都定义以上字段。</p>
+<h1 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h1><h2 id="硬件负载均衡"><a href="#硬件负载均衡" class="headerlink" title="硬件负载均衡"></a>硬件负载均衡</h2><p>硬件负载均衡是通过专门的硬件设备从而来实现负载均衡功能，比如：交换机、路由器就是一个负载均衡专用的网络设备。<br>目前典型的硬件负载均衡设备有两款：F5 和 A10。<br><strong>硬件负载均衡的优点：</strong></p>
+<ul>
+<li>功能强大：支持各层级负载均衡及全面负载均衡算法；</li>
+<li>性能强大：性能远超常见的软件负载均衡器；</li>
+<li>稳定性高：硬件负载均衡，大规模使用肯定是严格测试过的；</li>
+<li>安全防护：除具备负载均衡功能外，还具备防火墙、防 DDoS 攻击等安全功能；</li>
+</ul>
+<p><strong>硬件负载均衡的缺点：</strong></p>
+<ul>
+<li>价格昂贵；</li>
+<li>可扩展性差；</li>
+<li>调试维护麻烦；<h2 id="软件负载均衡"><a href="#软件负载均衡" class="headerlink" title="软件负载均衡"></a>软件负载均衡</h2>负载均衡又分为四层负载均衡和七层负载均衡。四层负载均衡工作在OSI模型的传输层，主要工作是转发，它在接收到客户端的流量以后通过修改数据包的地址信息将流量转发到应用服务器。<br>七层负载均衡工作在OSI模型的应用层，因为它需要解析应用层流量，所以七层负载均衡在接到客户端的流量以后，还需要一个完整的TCP/IP协议栈。七层负载均衡会与客户端建立一条完整的连接并将应用层的请求流量解析出来，再按照调度算法选择一个应用服务器，并与应用服务器建立另外一条连接将请求发送过去，因此七层负载均衡的主要工作就是代理。<h3 id="四层负载均衡"><a href="#四层负载均衡" class="headerlink" title="四层负载均衡"></a>四层负载均衡</h3>四层负载均衡在接收到客户端的流量以后通过修改数据包的地址信息将流量转发到应用服务器。其中，我们可以修改IP地址，也可以修改MAC地址。四层负载均衡的优点是不对数据进行完全解析，不跟客户端建立连接（握手），请求分发的效率快。缺点是不支持更为灵活的负载均衡方式，比如基于url、session、动静分离等。<br>目前主要有四层转发模式：DR模式、NAT模式、TUNNEL模式、FULLNAT模式。<h4 id="实现模式"><a href="#实现模式" class="headerlink" title="实现模式"></a>实现模式</h4><h5 id="DR模式"><a href="#DR模式" class="headerlink" title="DR模式"></a>DR模式</h5>DR(Direct Routing, 直接路由模式)，也叫作三角传输，过修改数据包的目的MAC地址来让流量经过二层转发到达应用服务器，这样应用服务器就可以直接将应答发给应用服务器，性能比较好。作法为负载均衡服务器修改请求数据包的目标MAC地址，并且在Real Service服务配置只有自己可见的lo:VIP，实现数据包的接收（自己没有VIP的话，服务并不会接收数据包）。<br><img src="/img/content/duoji/DR.png" srcset="/img/loading.gif" lazyload alt="DR模式"><br>整个转发的流程为：</li>
+</ul>
+<ol>
+<li>客户端发送请求，源IP：CIP，目标IP：VIP</li>
+<li>LB接收到请求，将数据帧中的目标MAC地址修改为Real Service的MAC 地址，通过调度算法选择转发到那台Real Service。</li>
+<li>Real Service 接收到请求，发现自己有VIP，端口号也匹配。于是接收数据，进行业务处理。并用VIP为IP地址，将响应数据直接发送给客户端。</li>
+</ol>
+<p>DR模式下，LB只接收请求进行转发，响应数据有Real Service直接发送给客户端，降低了LB的压力。但是NAT和DR都需要LB和Real Service处于同一网段，无法将RS部署在不同的机房。</p>
+<h5 id="NAT模式"><a href="#NAT模式" class="headerlink" title="NAT模式"></a>NAT模式</h5><p>NAT(Network Address Translation，网络地址转换)模式通过修改数据包的目的IP地址，让流量到达应用服务器，这样做的好处是数据包的目的IP就是应用服务器的IP，因此不需要再在应用服务器上配置VIP了。缺点是由于这种模式修改了目的IP地址，这样如果应用服务器直接将应答包发给客户端的话，其源IP是应用服务器的IP，客户端就不会正常接收这个应答，因此我们需要让流量继续回到负载均衡，负载均衡将应答包的源IP改回VIP再发到客户端，这样才可以保证正常通信，所以NAT模式要求负载均衡需要以网关的形式存在于网络中。<br>作法为在专用内部网络中，分配一台实现了NAT技术的路由或服务Load Balance Service。这台负载均衡服务器分配了公网IP(VIP, Virtual IP)，所有客户端请求服务都请求此IP。LBS通过不同的算法，将请求数据包的源IP以及目标IP修改，转发到真实服务器（Real Service）上进行业务处理。其具体的步骤可以分为：<br><img src="/img/content/duoji/NAT.png" srcset="/img/loading.gif" lazyload alt="NAT模式"><br>1、客户端发送请求，源IP为：CIP，目标IP为：VIP<br>2、LBS接收请求，解析数据报IP地址，将源IP修改为：VIP，目录IP修改为：RIP。具体修改为那个目标IP，通过算法的不同进行不同的选择。并将相关信息进行存储（MAP）后发送数据包。<br>3、RS 接收到请求，进行业务处理。并将结果返回给LBS。<br>4、LBS收到相应数据包，根据之前存储的MAP，将对应的SIP改为：VIP，TIP改为：CIP，将数据包发送出去。<br>注意：连接是建立在 客户端 与 Real Service 之间，LBS只是解析数据包IP和端口号，进行修改转发而已。<br>__可以看到通过NAT模式进行负载均衡，所有的请求以及响应都要通过LB服务器，当访问量较大时，LB服务器会成为瓶颈__。</p>
+<h5 id="TUNNEL模式"><a href="#TUNNEL模式" class="headerlink" title="TUNNEL模式"></a>TUNNEL模式</h5><p>TUN思想跟DR类似，在Real Service上配置一个内部可见的lo:VIP地址，LB通过封装或修改数据包信息实现请求的转发。不同于DR模式LB修改MAC地址，为了实现不同网段的Real Service负载，TUN模式通过在原有的数据包外封装一层IP Tunnel ，实现数据的转发。由于封装完 IP Tunnel 后数据包和正常的数据包结构不同，所以Real Service的OS需要支持Tunnel功能。<br><img src="/img/content/duoji/TUN.png" srcset="/img/loading.gif" lazyload alt="TUNNEL模式"><br>TUN转发的具体流程为：</p>
+<ol>
+<li>客户端发送请求，SIP：CIP；TIP：VIP</li>
+<li>LB接收到请求，在数据包外在封装一层IP Tunnel，其SIP为DIP，TIP为RIP3.</li>
+<li>Real Service接收到请求，根据IP Tunnel 的IP地址判断出是发送给自己的请求，进行后续处理。根据源数据包的IP地址，判断出客户端的地址为CIP，并且VIP也是自己配置的IP，对数据进行业务处理后，通过VIP将响应数据直接发送到客户端。<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><h5 id="LVS"><a href="#LVS" class="headerlink" title="LVS"></a>LVS</h5>LVS是Linux Virtual Server的简称，也就是Linux虚拟服务器。它是一个由章文嵩博士发起的自由软件项目，官方站点是<a target="_blank" rel="noopener" href="http://www.linuxvirtualserver.org/">www.linuxvirtualserver.org</a>。现在LVS已经是 Linux标准内核的一部分，在Linux2.4内核以前，使用LVS时必须要重新编译内核以支持LVS功能模块，但是从Linux2.4内核以后，已经完全内置了LVS的各个功能模块，无需给内核打任何补丁，可以直接使用LVS提供的各种功能。<br>LVS技术要达到的目标是：通过LVS提供的负载均衡技术和Linux操作系统实现一个高性能、高可用的服务器群集，它具有良好可靠性、可扩展性和可操作性。从而以低廉的成本实现最优的服务性能。<br>LVS自从1998年开始，发展到现在已经是一个比较成熟的技术项目了。可以利用LVS技术实现高可伸缩的、高可用的网络服务，例如WWW服务、Cache服务、DNS服务、FTP服务、MAIL服务、视频/音频点播服务等等，有许多比较著名网站和组织都在使用LVS架设的集群系统，例如：Linux的门户网站（<a target="_blank" rel="noopener" href="http://www.linux.com/">www.linux.com</a>）、向RealPlayer提供音频视频服务而闻名的Real公司（<a target="_blank" rel="noopener" href="http://www.real.com/">www.real.com</a>）、全球最大的开源网站（sourceforge.net）等。<br>LVS目前有三种IP负载均衡技术（VS/NAT、VS/TUN和VS/DR）；十种调度算法（rrr|wrr|lc|wlc|lblc|lblcr|dh|sh|sed|nq） <h3 id="七层负载均衡"><a href="#七层负载均衡" class="headerlink" title="七层负载均衡"></a>七层负载均衡</h3>通常使用的nginx负载均衡技术， 在网络分层中处于应用层（第七层）的，nginx与客户端建立TCP连接（握手），然后再根据请求信息以及本地配置信息，将请求灵活的分发到不同的服务上。nginx这类7层负载均衡的优缺点都很明显。</li>
+</ol>
+<ul>
+<li><p>优点：可以将请求分发到不同的服务上，并且可以根据请求信息进行灵活的代理转发，实现更复杂的负载均衡控制，比如基于url、session、动静分离等；由于请求会通过负载均衡服务器，负载均衡服务器会过滤一些请求（例如：DOS攻击）避免所有请求信息都打到服务器上，保障了服务器的稳定运行。</p>
+</li>
+<li><p>缺点：处于网络分层的最上层，需要对数据进行解析，与客户端建立连接，效率比较低。</p>
+<h4 id="Nginx"><a href="#Nginx" class="headerlink" title="Nginx"></a>Nginx</h4><p>Nginx是一款高性能的http 服务器/反向代理服务器及电子邮件（IMAP/POP3）代理服务器。由俄罗斯的程序设计师Igor Sysoev所开发，官方测试nginx能够支支撑5万并发链接，并且cpu、内存等资源消耗却非常低，运行非常稳定。<br>nginx负载均衡的几种常用方式</p>
+<h5 id="轮循"><a href="#轮循" class="headerlink" title="轮循"></a>轮循</h5><p>每个请求按时间顺序逐一分配到不同的后端服务器，如果后端服务器down掉，能自动剔除。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">upstream backserver &#123;<br>    server 192.168.0.3;<br>    server 192.168.0.7;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h5 id="weight"><a href="#weight" class="headerlink" title="weight"></a>weight</h5><p>指定轮询几率，weight和访问比率成正比，用于后端服务器性能不均的情况。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">upstream backserver &#123;<br>    server 192.168.0.14 weight=3;<br>    server 192.168.0.15 weight=7;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h5 id="ip-hash"><a href="#ip-hash" class="headerlink" title="ip_hash"></a>ip_hash</h5><p>在负载均衡系统中，假如用户在某台服务器上登录了，那么该用户第二次请求的时候，因为我们是负载均衡系统，每次请求都会重新定位到服务器集群中的某一个，那么已经登录某一个服务器的用户再重新定位到另一个服务器，其登录信息将会丢失，这样显然是不妥的。<br>我们可以采用ip_hash指令解决这个问题，如果客户已经访问了某个服务器，当用户再次访问时，会将该请求通过哈希算法，自动定位到该服务器。<br>每个请求按访问ip的hash结果分配，这样每个访客固定访问一个后端服务器，可以解决session的问题。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">upstream backserver &#123;<br>    ip_hash;<br>    server 192.168.0.14:88;<br>    server 192.168.0.15:80;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h5 id="fair-三方"><a href="#fair-三方" class="headerlink" title="fair(三方)"></a>fair(三方)</h5><p>按后端服务器的响应时间来分配请求，响应时间短的优先分配。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">upstream backserver &#123;<br>    server server1;<br>    server server2;<br>    fair;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h5 id="url-hash-三方"><a href="#url-hash-三方" class="headerlink" title="url_hash(三方)"></a>url_hash(三方)</h5><p>按访问url的hash结果来分配请求，使每个url定向到同一个（对应的）后端服务器，后端服务器为缓存时比较有效。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">upstream backserver &#123;<br>    server squid1:3128;<br>    server squid2:3128;<br>    hash $request_uri;<br>    hash_method crc32;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>在需要使用负载均衡的server中增加</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">proxy_pass http://backserver/; <br>upstream backserver&#123; <br>    ip_hash; <br>    server 127.0.0.1:9090 down; (down 表示单前的server暂时不参与负载) <br>    server 127.0.0.1:8080 weight=2; (weight 默认为1.weight越大，负载的权重就越大) <br>    server 127.0.0.1:6060; <br>    server 127.0.0.1:7070 backup; (其它所有的非backup机器down或者忙的时候，请求backup机器) <br>&#125; <br></code></pre></td></tr></table></figure>
+<p>max_fails ：允许请求失败的次数默认为1.当超过最大次数时，返回proxy_next_upstream 模块定义的错误<br>fail_timeout:max_fails次失败后，暂停的时间<br>配置实例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">#</span><span class="language-bash">user  nobody;</span><br><br>worker_processes  4;<br>events &#123;<br><span class="hljs-meta prompt_"># </span><span class="language-bash">最大并发数</span><br>worker_connections  1024;<br>&#125;<br>http&#123;<br>    # 待选服务器列表<br>    upstream myproject&#123;<br>        # ip_hash指令，将同一用户引入同一服务器。<br>        ip_hash;<br>        server 125.219.3.7 fail_timeout=60s;<br>        server 172.31.3.7;<br>    &#125;<br><br>    server&#123;<br>        # 监听端口<br>        listen 80;<br>        # 根目录下<br>        location / &#123;<br>        # 选择哪个服务器列表<br>            proxy_pass http://myproject;<br>        &#125;<br><br>    &#125;<br>&#125;<br><br><br></code></pre></td></tr></table></figure>
+<h1 id="应用分流"><a href="#应用分流" class="headerlink" title="应用分流"></a>应用分流</h1><p>当开发人员发现系统中某些资源的构建成本比较高，而这些资源又有被重复使用的可能时，会很自然地产生“循环再利用”的想法，将它们放到Map容器中，待下次需要时取出重用，避免重新构建，这种原始朴素的复用就是最基本的缓存。在应用中使用缓存，可以从缓存中取得数据，返回结果。</p>
+<h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><h3 id="分布式缓存"><a href="#分布式缓存" class="headerlink" title="分布式缓存"></a>分布式缓存</h3><h4 id="Memcache"><a href="#Memcache" class="headerlink" title="Memcache"></a>Memcache</h4><p>Memcached 是一个开源的、高性能的分布式 key/value 内存缓存系统。它以 key/value 键值对的方式存储数据，是一个键值类型的 NoSQL 组件。<br>Memcached 简称 Mc，是一个典型的内存型缓存组件，这就意味着，Mc 一旦重启就会丢失所有的数据。如下图所示，Mc 组件之间相互不通信，完全由 client 对 key 进行 Hash 后分布和协同。Mc 采用多线程处理请求，由一个主线程和任意多个工作线程协作，从而充分利用多核，提升 IO 效率。<br>Mc 的特性。</p>
+</li>
+<li><p>Mc 最大的特性是高性能，单节点压测性能能达到百万级的 QPS。</p>
+</li>
+<li><p>其次因为 Mc 的访问协议很简单，只有 get/set/cas/touch/gat/stats 等有限的几个命令。Mc 的访问协议简单，跟它的存储结构也有关系。</p>
+</li>
+<li><p>Mc 存储结构很简单，只存储简单的 key/value 键值对，而且对 value 直接以二进制方式存储，不识别内部存储结构，所以有限几个指令就可以满足操作需要。</p>
+</li>
+<li><p>Mc 完全基于内存操作，在系统运行期间，在有新 key 写进来时，如果没有空闲内存分配，就会对最不活跃的 key 进行 eviction 剔除操作。</p>
+</li>
+<li><p>最后，Mc 服务节点运行也特别简单，不同 Mc 节点之间互不通信，由 client 自行负责管理数据分布。</p>
+<h4 id="Redis"><a href="#Redis" class="headerlink" title="Redis"></a>Redis</h4><p>Redis 是一款基于 ANSI C 语言编写的，BSD 许可的，日志型 key-value 存储组件，它的所有数据结构都存在内存中，可以用作缓存、数据库和消息中间件。<br>Redis 是 Remote dictionary server 即远程字典服务的缩写，一个 Redis 实例可以有多个存储数据的字典，客户端可以通过 select 来选择字典即 DB 进行数据存储。<br>同为 key-value 存储组件，Memcached 只能支持二进制字节块这一种数据类型。而 Redis 的数据类型却丰富的多，它具有 8 种核心数据类型，每种数据类型都有一系列操作指令对应。Redis 性能很高，单线程压测可以达到 10~11w 的 QPS。<br>虽然 Redis 所有数据的读写操作，都在内存中进行，但也可以将所有数据进行落盘做持久化。Redis 提供了 2 种持久化方式。</p>
+</li>
+<li><p>快照方式，将某时刻所有数据都写入硬盘的 RDB 文件；</p>
+</li>
+<li><p>追加文件方式，即将所有写命令都以追加的方式写入硬盘的 AOF 文件中。</p>
+</li>
+</ul>
+<p>线上 Redis 一般会同时使用两种方式，通过开启 appendonly 及关联配置项，将写命令及时追加到 AOF 文件，同时在每日流量低峰时，通过 bgsave 保存当时所有内存数据快照。</p>
+<h3 id="本地缓存"><a href="#本地缓存" class="headerlink" title="本地缓存"></a>本地缓存</h3><p>本地缓存和应用同属于一个进程，使用不当会影响服务稳定性，所以通常需要考虑更多的因素，例如容量限制、过期策略、淘汰策略、自动刷新等。常用的本地缓存方案有：</p>
+<ul>
+<li>根据HashMap自实现本地缓存</li>
+<li>Guava Cache</li>
+<li>Caffeine</li>
+<li>Encache<h2 id="消息中间件"><a href="#消息中间件" class="headerlink" title="消息中间件"></a>消息中间件</h2>如果应用中的请求需要花费的时间比较长，或者一时间接收了大量的请求。我们可以使用消息中间件来进行分流。<br>当前业界比较流行的开源消息中间件包括：ActiveMQ、RabbitMQ、RocketMQ、Kafka、ZeroMQ等，其中应用最为广泛的要数RabbitMQ、RocketMQ、Kafka 这三款。Redis在某种程度上也可以是实现类似 “Queue” 和“ Pub/Sub” 的机制，严格意义上不算消息中间件。<br><img src="/img/content/duoji/%E4%B8%AD%E9%97%B4%E4%BB%B6.png" srcset="/img/loading.gif" lazyload alt="消息中间件"> <h1 id="数据库分流"><a href="#数据库分流" class="headerlink" title="数据库分流"></a>数据库分流</h1><h2 id="单表容量"><a href="#单表容量" class="headerlink" title="单表容量"></a>单表容量</h2>在中国互联网技术圈流传着这么一个说法：MySQL 单表数据量大于 2000 万行，性能会明显下降。再后来，阿里巴巴《Java 开发手册》提出单表行数超过 500 万行或者单表容量超过 2GB，才推荐进行分库分表。对此，有阿里的黄金铁律支撑，所以，很多人设计大数据存储时，多会以此为标准，进行分表操作。<br>我们知道，InnoDB存储引擎最小储存单元——页（Page），一个页的大小是16K。<br>这里我们先假设B+树高为2，即存在一个根节点和若干个叶子节点，那么这棵B+树的存放总记录数为：根节点指针数<em>单个叶子节点记录行数。<br>假设一行记录的数据大小为1k，单个叶子节点（页）中的记录数=16K/1K=16。现在我们需要计算出非叶子节点能存放多少指针，其实这也很好算，我们假设主键ID为bigint类型，长度为8字节，而指针大小在InnoDB源码中设置为6字节，这样一共14字节，我们一个页中能存放多少这样的单元，其实就代表有多少指针，即16384/14=1170。那么可以算出一棵高度为2的B+树，能存放1170</em>16=18720条这样的数据记录。<br>根据同样的原理我们可以算出一个高度为3的B+树可以存放：1170<em>1170</em>16=21902400条这样的记录。所以在InnoDB中B+树高度一般为1-3层，它就能满足千万级的数据存储。在查找数据时一次页的查找代表一次IO，所以通过主键索引查询通常只需要1-3次IO操作即可查找到数据。<br><img src="/img/content/duoji/B+Index.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>对于使用InnoDB作为存储引擎的表来说，不管是用于存储用户数据的索引（包括聚簇索引和二级索引），还是各种系统数据，都是以页的形式存放在表空间中的，而所谓的表空间只不过是InnoDB对文件系统上一个或几个实际文件的抽象，也就是说我们的数据说到底还是存储在磁盘上的。但是各位也都知道，磁盘的速度慢的可以，所以InnoDB存储引擎在处理客户端的请求时，当需要访问某个页的数据时，就会把完整的页的数据全部加载到内存中，也就是说即使我们只需要访问一个页的一条记录，那也需要先把整个页的数据加载到内存中。将整个页加载到内存中后就可以进行读写访问了，在进行完读写访问之后并不着急把该页对应的内存空间释放掉，而是将其缓存起来，这样将来有请求再次访问该页面时，就可以省去磁盘IO的开销了。<br>设计InnoDB的大佬为了缓存磁盘中的页，在MySQL服务器启动的时候就向操作系统申请了一片连续的内存，他们给这片内存起了个名，叫做Buffer Pool（中文名是缓冲池）。那它有多大呢？这个其实看我们机器的配置，最小是5M,但如果你是土豪，你有512G内存，你分配个几百G作为Buffer Pool也可以的。<br>Buffer Pool是一个LRU缓存。从上图我们看到，如果表常用的话，数据在2千万以下，索引页还是很容易被缓存进目录的。所以查询的速度很快。但如果树高再增加一层，就需要21G的内存空间来进行索引，如果内存配置的够大的话，也是可以的。但如果再高一层，需要24T的内存来缓存索引，这个是土豪也不行的吧。<br>事实上，性能最快的肯定是数据都在内存里，2000万涉及到的是索引值是不是都能缓存进内存。而500万更多的是考虑到叶子节点缓存的占用。如果常用的叶子节点数据能够常驻在内存中，那数据应该查询的更快。<h2 id="分库分表策略"><a href="#分库分表策略" class="headerlink" title="分库分表策略"></a>分库分表策略</h2>既然表的容量有限制，那么最好的办法就是分库分表。分库分表有水平与垂直两个策略来说。垂直分表就是按照业务，把一张表分成几个业务表，从而减少单表数量，每个表的字段不一样。水平分表就是把一张表的数据切成多份，存储在不同的表中，每个表的字段一样。<h3 id="水平分库分表策略"><a href="#水平分库分表策略" class="headerlink" title="水平分库分表策略"></a>水平分库分表策略</h3><h4 id="取模分片"><a href="#取模分片" class="headerlink" title="取模分片"></a>取模分片</h4>错误做法：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> ShardCfg <span class="hljs-title function_">shardByMod</span><span class="hljs-params">(Long userId)</span> &#123; <br>    <span class="hljs-comment">// 对库数量取余结果为库序号 </span><br>    <span class="hljs-type">int</span> <span class="hljs-variable">dbIdx</span> <span class="hljs-operator">=</span> Math.abs(userId % DB_CNT); <br>    <span class="hljs-comment">// 对表数量取余结果为表序号 </span><br>    <span class="hljs-type">int</span> <span class="hljs-variable">tblIdx</span> <span class="hljs-operator">=</span> Math.abs(userId % TBL_CNT); <br> <br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ShardCfg</span>(dbIdx, tblIdx); <br>&#125; <br></code></pre></td></tr></table></figure></li>
+</ul>
+<p>其实稍微思索一下，我们就会发现，以 10 库 100 表为例，如果一个  值对 100 取余为 0，那么它对 10 取余也必然为 0。这就意味着只有 0 库里面的 0 表才可能有数据，而其他库中的 0 表永远为空!如果一个值对100取余为1，对10取余肯定也为1，那么1库1表才可会有数据。类似的我们还能推导到，0 库里面的共 100 张表，只有 10 张表中(个位数为 0 的表序号)才可能有数据。<br>这就带来了非常严重的数据偏斜问题，因为某些表中永远不可能有数据，最大数据偏斜率达到了无穷大。<br>事实上，只要库数量和表数量非互质关系，都会出现某些表中无数据的问题。<br>么是不是只要库数量和表数量互质就可用用这种分库分表方案呢?比如我用 11 库 100 表的方案，是不是就合理了呢?<br>答案是否定的，我们除了要考虑数据偏斜的问题，还需要考虑可持续性扩容的问题，一般这种 Hash 分库分表的方案后期的扩容方式都是通过翻倍扩容法，那 11 库翻倍后，和 100 又不再互质。<br>当然，如果分库数和分表数不仅互质，而且分表数为奇数(例如 10 库 101 表)，则理论上可以使用该方案，但是我想大部分人可能都会觉得使用奇数的分表数比较奇怪吧。<br>正确做法：<br>一：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> ShardCfg <span class="hljs-title function_">shardByMod</span><span class="hljs-params">(Long userId)</span> &#123; <br>    <span class="hljs-type">int</span> <span class="hljs-variable">slot</span> <span class="hljs-operator">=</span> DB_CNT*TBL_CNT;<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ShardCfg</span>(userId%slot); <br>&#125; <br></code></pre></td></tr></table></figure>
+<p>将库与表取合标个序号，直接用序号取模。<br>二：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> ShardCfg <span class="hljs-title function_">shardByMod</span><span class="hljs-params">(Long userId)</span> &#123; <br>    <span class="hljs-comment">// 对库数量取余结果为库序号 </span><br>    <span class="hljs-type">int</span> <span class="hljs-variable">dbIdx</span> <span class="hljs-operator">=</span> Math.abs(userId/DB_CNT); <br>    <span class="hljs-comment">// 对表数量取余结果为表序号 </span><br>    <span class="hljs-type">int</span> <span class="hljs-variable">tblIdx</span> <span class="hljs-operator">=</span> Math.abs(dbIdx % TBL_CNT); <br> <br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ShardCfg</span>(dbIdx, tblIdx); <br>&#125; <br></code></pre></td></tr></table></figure>
+<h5 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h5><p>实现起来比较简单。</p>
+<h5 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h5><p>扩容数据需要迁移<br>不利于范围扫描查询操作</p>
+<h4 id="Range范围分库分表"><a href="#Range范围分库分表" class="headerlink" title="Range范围分库分表"></a>Range范围分库分表</h4><p>顾名思义，该方案根据数据范围划分数据的存放位置。<br>举个最简单例子，我们可以把订单表按照年份为单位，每年的数据存放在单独的库(或者表)中。<br>如下图所示：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">rangeShardByYear</span><span class="hljs-params">(String orderId)</span> &#123; <br>    <span class="hljs-type">int</span> <span class="hljs-variable">year</span> <span class="hljs-operator">=</span> Integer.parseInt(orderId.substring(<span class="hljs-number">0</span>, <span class="hljs-number">4</span>)); <br>	<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;t_order_&quot;</span> + year; <br>&#125; <br></code></pre></td></tr></table></figure>
+<p>通过数据的范围进行分库分表，该方案是最朴实的一种分库方案，它也可以和其他分库分表方案灵活结合使用。<br>时下非常流行的分布式数据库：TiDB 数据库，针对 TiKV 中数据的打散，也是基于 Range 的方式进行，将不同范围内的[StartKey，EndKey)分配到不同的 Region 上。</p>
+<h5 id="优点-1"><a href="#优点-1" class="headerlink" title="优点"></a>优点</h5><p>集群扩容后，指定新的范围落在新节点即可，无需进行数据迁移。</p>
+<h5 id="缺点-1"><a href="#缺点-1" class="headerlink" title="缺点"></a>缺点</h5><ul>
+<li><p>最明显的就是数据热点问题，例如上面案例中的订单表，很明显当前年度所在的库表属于热点数据，需要承载大部分的 IO 和计算资源。</p>
+</li>
+<li><p>新库和新表的追加问题。一般我们线上运行的应用程序是没有数据库的建库建表权限的，故我们需要提前将新的库表提前建立，防止线上故障。</p>
+</li>
+<li><p>这点非常容易被遗忘，尤其是稳定跑了几年没有迭代任务，或者人员又交替频繁的模块。</p>
+<h4 id="Hash分库分表"><a href="#Hash分库分表" class="headerlink" title="Hash分库分表"></a>Hash分库分表</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> ShardCfg <span class="hljs-title function_">shard</span><span class="hljs-params">(String userId)</span> &#123; <br>    <span class="hljs-type">int</span> <span class="hljs-variable">hash</span> <span class="hljs-operator">=</span> userId.hashCode(); <br>    <span class="hljs-comment">// 对库数量取余结果为库序号 </span><br>    <span class="hljs-type">int</span> <span class="hljs-variable">dbIdx</span> <span class="hljs-operator">=</span> Math.abs(hash / DB_CNT); <br>    <span class="hljs-comment">// 对表数量取余结果为表序号 </span><br>    <span class="hljs-type">int</span> <span class="hljs-variable">tblIdx</span> <span class="hljs-operator">=</span> Math.abs(dbIdx % TBL_CNT); <br> <br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ShardCfg</span>(dbIdx, tblIdx); <br>&#125; <br></code></pre></td></tr></table></figure>
+<h5 id="优点-2"><a href="#优点-2" class="headerlink" title="优点"></a>优点</h5><p>实现起来比较简单。</p>
+<h5 id="缺点-2"><a href="#缺点-2" class="headerlink" title="缺点"></a>缺点</h5><p>扩容数据需要迁移<br>不利于范围扫描查询操作</p>
+<h4 id="融合算法"><a href="#融合算法" class="headerlink" title="融合算法"></a>融合算法</h4><p>这时我们应该意识到，以上介绍的哈希和范围的分片算法并不是非此即彼，二选一的。相反，我们可以灵活地组合它们。<br>例如，我们可以建立一个多级分片策略，该策略在最上层使用哈希算法，而在每个基于哈希的分片单元中，数据将按顺序存储。</p>
+<h2 id="扩容方案"><a href="#扩容方案" class="headerlink" title="扩容方案"></a>扩容方案</h2><h3 id="翻倍扩容法"><a href="#翻倍扩容法" class="headerlink" title="翻倍扩容法"></a>翻倍扩容法</h3><p><img src="/img/content/duoji/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E7%BF%BB%E5%80%8D%E6%89%A9%E5%AE%B9%E6%96%B9%E6%A1%88.gif" srcset="/img/loading.gif" lazyload alt="分库分表翻倍扩容方案"><br>具体的流程大致如下：<br>step1：为每个节点都新增从库，开启主从同步进行数据同步。<br>step2：主从同步完成后，对主库进行禁写。<br>此处禁写主要是为了保证数据的正确性。若不进行禁写操作，在以下两个时间窗口期内将出现数据不一致的问题：</p>
+</li>
+<li><p>断开主从后，若主库不禁写，主库若还有数据写入，这部分数据将无法同步到从库中。</p>
+</li>
+<li><p>应用集群识别到分库数翻倍的时间点无法严格一致，在某个时间点可能两台应用使用不同的分库数，运算到不同的库序号，导致错误写入。</p>
+</li>
+</ul>
+<p>step3：同步完全完成后，断开主从关系，理论上此时从库和主库有着完全一样的数据集。<br>step4：从库升级为集群节点，业务应用识别到新的分库数后，将应用新的路由算法。<br>一般情况下，我们将分库数的配置放到配置中心中，当上述三个步骤完成后，我们修改分库数进行翻倍，应用生效后，应用服务将使用新的配置。<br>这里需要注意的是，业务应用接收到新的配置的时间点不一定一致，所以必定存在一个时间窗口期，该期间部分机器使用原分库数，部分节点使用新分库数。这也正是我们的禁写操作一定要在此步完成后才能放开的原因。<br>step5：确定所有的应用均接受到库总数的配置后，放开原主库的禁写操作，此时应用完全恢复服务。<br>启动离线的定时任务，清除各库中的约一半冗余数据。<br>为了节省磁盘的使用率，我们可以选择离线定时任务清除冗余的数据。也可以在业务初期表结构设计的时候，将索引键的 Hash 值存为一个字段。</p>
+<h3 id="一致性Hash扩容"><a href="#一致性Hash扩容" class="headerlink" title="一致性Hash扩容"></a>一致性Hash扩容</h3><h4 id="一致性Hash算法"><a href="#一致性Hash算法" class="headerlink" title="一致性Hash算法"></a>一致性Hash算法</h4><ol>
+<li>我们把节点通过hash后，映射到一个范围是[0，2^32]的环上</li>
+</ol>
+<p><img src="/img/content/duoji/%E4%B8%80%E8%87%B4%E6%80%A7hash%E6%9C%BA%E5%99%A8.png" srcset="/img/loading.gif" lazyload alt="一致性hash机器"><br>2.把数据也通过hash的方式映射到环上<br><img src="/img/content/duoji/%E4%B8%80%E8%87%B4%E6%80%A7hash%E6%95%B0%E6%8D%AE.png" srcset="/img/loading.gif" lazyload alt="一致性hash数据.png"><br>3.因为节点越多，它们在环上的分布就越均匀，使用虚拟节点还可以降低节点之间的负载差异<br><img src="/img/content/duoji/%E4%B8%80%E8%87%B4%E6%80%A7hash%E8%99%9A%E6%8B%9F%E8%8A%82%E7%82%B9.png" srcset="/img/loading.gif" lazyload alt="一致性hash虚拟节点.png"></p>
+<h4 id="扩容"><a href="#扩容" class="headerlink" title="扩容"></a>扩容</h4><p>主要步骤如下：</p>
+<ul>
+<li>step1：针对需要扩容的数据库节点增加从节点，开启主从同步进行数据同步。</li>
+<li>step2：完成主从同步后，对原主库进行禁写。此处原因和翻倍扩容法类似，需要保证新的从库和原来主库中数据的一致性。</li>
+<li>step3：同步完全完成后，断开主从关系，理论上此时从库和主库有着完全一样的数据集。</li>
+<li>step4：修改一致性 Hash 范围的配置，并使应用服务重新读取并生效。</li>
+<li>step5：确定所有的应用均接受到新的一致性 Hash 范围配置后，放开原主库的禁写操作，此时应用完全恢复服务。</li>
+</ul>
+<p>启动离线的定时任务，清除冗余数据。<br>可以看到，该方案和翻倍扩容法的方案比较类似，但是它更加灵活，可以根据当前集群每个节点的压力情况选择性扩容，而无需整个集群同时翻倍进行扩容。<br><img src="/img/content/duoji/%E4%B8%80%E8%87%B4%E6%80%A7hash%E6%89%A9%E5%AE%B9.jpg" srcset="/img/loading.gif" lazyload alt="一致性hash扩容.jpg"></p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%9E%B6%E6%9E%84/" class="category-chain-item">架构</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/DNS/">#DNS</a>
+      
+        <a href="/tags/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">#负载均衡</a>
+      
+        <a href="/tags/CDN/">#CDN</a>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">#数据库</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>多级分流</div>
+      <div>http://www.3world.top/2023/01/29/多级分流/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>胖子笑西风</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年1月29日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/11/28/DDD%E4%B8%8EEDA-%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91%E6%8F%90%E7%82%BC%E6%96%B9%E6%B3%95%E8%AE%BA/" title="DDD与EDA-核心逻辑提炼方法论">
+                        <span class="hidden-mobile">DDD与EDA-核心逻辑提炼方法论</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div class="disqus" style="width:100%">
+    <div id="disqus_thread"></div>
+    
+      <script type="text/javascript">
+        var disqus_config = function() {
+          this.page.url = 'http://www.3world.top/2023/01/29/%E5%A4%9A%E7%BA%A7%E5%88%86%E6%B5%81/';
+          this.page.identifier = '/2023/01/29/%E5%A4%9A%E7%BA%A7%E5%88%86%E6%B5%81/';
+        };
+        Fluid.utils.loadComments('#disqus_thread', function() {
+          var d = document, s = d.createElement('script');
+          s.src = '//' + 'fluid' + '.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', new Date());
+          (d.head || d.body).appendChild(s);
+        });
+      </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+  </div>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?ce2e798b1c31297dd7ece0242cac0a2b";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+    <!-- Google gtag.js -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript('https://www.googletagmanager.com/gtag/js?id=G-MBPFGDQNG5', function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-MBPFGDQNG5');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

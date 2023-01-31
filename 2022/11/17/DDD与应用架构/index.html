@@ -1,0 +1,864 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="胖子笑西风">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="架构架构这一词，英文单词为Architecture。Architecture在计算机体系中解释为架构，在建筑领域中理解为结构。因此，理解计算机的架构，我们可以从建筑学中的结构出发。上图是一张房子的结构图。从图中我们可以看到，房子的结构主要是说明这个房子有什么东西，这些东西应该在什么位置，怎么样整合起来整体更好看，更耐用。同样，我认为架构跟结构是一个道理的。网上大家对架构是这么定义的：架构是“以组件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DDD与应用架构">
+<meta property="og:url" content="http://www.3world.top/2022/11/17/DDD%E4%B8%8E%E5%BA%94%E7%94%A8%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:site_name" content="胖子笑西风">
+<meta property="og:description" content="架构架构这一词，英文单词为Architecture。Architecture在计算机体系中解释为架构，在建筑领域中理解为结构。因此，理解计算机的架构，我们可以从建筑学中的结构出发。上图是一张房子的结构图。从图中我们可以看到，房子的结构主要是说明这个房子有什么东西，这些东西应该在什么位置，怎么样整合起来整体更好看，更耐用。同样，我认为架构跟结构是一个道理的。网上大家对架构是这么定义的：架构是“以组件">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.3world.top/img/content/CleanArchetecture.png">
+<meta property="article:published_time" content="2022-11-17T02:25:00.000Z">
+<meta property="article:modified_time" content="2023-01-31T05:47:56.000Z">
+<meta property="article:author" content="胖子笑西风">
+<meta property="article:tag" content="DDD">
+<meta property="article:tag" content="六边形架构">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://www.3world.top/img/content/CleanArchetecture.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>DDD与应用架构 - 胖子笑西风</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"www.3world.top","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"ce2e798b1c31297dd7ece0242cac0a2b","google":null,"gtag":"G-MBPFGDQNG5","tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>胖子笑西风</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/content/ddd/rigui.jpeg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="DDD与应用架构"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-11-17 10:25" pubdate>
+          2022年11月17日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          11k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          95 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">DDD与应用架构</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h1><p>架构这一词，英文单词为Architecture。Architecture在计算机体系中解释为架构，在建筑领域中理解为结构。因此，理解计算机的架构，我们可以从建筑学中的结构出发。<br><img src="/img/content/ddd/house.png" srcset="/img/loading.gif" lazyload alt="房屋结构图"><br>上图是一张房子的结构图。从图中我们可以看到，房子的结构主要是说明这个房子有什么东西，这些东西应该在什么位置，怎么样整合起来整体更好看，更耐用。<br>同样，我认为架构跟结构是一个道理的。网上大家对架构是这么定义的：架构是“以组件、组件之间的关系、组件与环境之间的关系为内容的某一系统的基本组织结构，以及指导上述内容设计与演化的原则。说白了就是说明你所描述的东西有什么组成，以什么方式组成。</p>
+<h2 id="业务架构"><a href="#业务架构" class="headerlink" title="业务架构"></a>业务架构</h2><p>我们通常所说的业务架构。就是描绘一个业务有哪些东西，这些东西怎么排列,以什么样的关系组成起来。<br><img src="/img/content/ddd/alizhongtai.png" srcset="/img/loading.gif" lazyload alt="阿里中台架构图"></p>
+<h2 id="组织架构"><a href="#组织架构" class="headerlink" title="组织架构"></a>组织架构</h2><p>组织架构，就是说明组织里面有哪些部门，部门的层级关系是什么样的。或者是组织间人与人之间的关系是什么样的。<br><img src="/img/content/ddd/shaoyehewo.png" srcset="/img/loading.gif" lazyload alt="少爷和我"></p>
+<h2 id="应用架构"><a href="#应用架构" class="headerlink" title="应用架构"></a>应用架构</h2><p>应用架构，其实就是说明一个应用里面有哪些部分，各个部分如何排列，如何依赖。<br>比如我们最经典的三层架构<br><img src="/img/content/ddd/thirdlayer.png" srcset="/img/loading.gif" lazyload alt="三层架构"></p>
+<h1 id="框架"><a href="#框架" class="headerlink" title="框架"></a>框架</h1><p>框架，顾名思义，我觉得就是把一件事框在一定范围内，按照一定规范行事。框架是一种约束。<br>大家都遵守一种规范，在一个约束下干活。这样才能事半功倍。<br>框架，在是一种约束的情况下，也是一种工具。所谓工具，就是生产力。框架会提供一些方法、方式使你的生产力太幅度提高。从而使项目更快的完成。<br>比如spring框架<br>spring框架遵守了mvc的规范，让大家在这个规范约束下统一的行动。比如数据库接为Controller，业务处理为Service。大家统一行动，大大减少了沟通成本。<br>同时，spring的AOP,IOC大大提高了生产力，开发者只要会实现AOP或者IOC，会编写简单的业务代码，就可以实现一套可运行的程序。</p>
+<h1 id="服务应用架构的演进"><a href="#服务应用架构的演进" class="headerlink" title="服务应用架构的演进"></a>服务应用架构的演进</h1><p>我们知道，当一个项目或者一件事都只有一个人在做的时候，再混乱都能整出一些条理出来。但多人开发一个项目或者是多人做一件事的时候，混乱就开始了，人越多，就越混乱，通常我们叫它熵增。而如之前所说，架构就是要确定一件事情里面有哪些东西，这些东西该如何整合来解决某个问题。说白了就是提出某种规范，大家都遵守这种规范，事情就会变得井然有序。但我们知道软件开发与建筑不一样的是，建筑不管前期设计过多少遍结构，只要定下来，建造完成之后基本上就不会动了。而软件开发在需求确定之后，随着业务变化，还是会不断的修改，不断的迭代。<br><img src="/img/content/ddd/nostop.png" srcset="/img/loading.gif" lazyload alt="程序员没有天"><br>我认为，应用架构的产生是为了推动软件开发的，那它最起码要解决两个问题:<br>1.怎么确定规范使一团杂乱的事情变得有序。<br>2.当修改产生的时候，怎么样才能花最小的代价应付改动。</p>
+<h2 id="J2EE"><a href="#J2EE" class="headerlink" title="J2EE"></a>J2EE</h2><p>早的时候，我们开发一套Java Web程序，直接创建一个项目。一个servlet的service方法就把所有的逻辑处理了。service方法好几千行，各种逻辑夹杂在其中。开发人员要想修改一个逻辑，往往要找半天。改完了还不知道修改的逻辑会不会影响到其它地方。测试也很麻烦，修改过一处地方，往往就要将所有功能重新测试一遍。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OmnipotentServlet</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">HttpServlet</span> &#123;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">service</span><span class="hljs-params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="hljs-keyword">throws</span> ServletException, IOException &#123;<br>        <span class="hljs-comment">/**</span><br><span class="hljs-comment">         * 此处省略几千行代码</span><br><span class="hljs-comment">         */</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>是不是心很累！<br>是的，所有软件开发人员都觉得很累。<br>如我们之前所说，我们要定义一种架构，规范，使这几千行变得有序，且能最小化改动。<br>那规范怎么建立呢。分层是一种很好的方法。<br>Frank Buschmann 等人著的《面向模式的软件架构》第一卷《模式系统》第二章中提出了层的概念，该模式参考了 ISO 对 TCP/IP 协议的分层。书中是这样描述层的:</p>
+<blockquote>
+<p>层(layer)体系结构模式有助于构建这样的应用：它能被分解成子任务组，其中每个子任务组处于一个特定的抽象层次上。</p>
+</blockquote>
+<p><img src="/img/content/ddd/luan.png" srcset="/img/loading.gif" lazyload alt="混乱到有序.png"></p>
+<h2 id="三层架构"><a href="#三层架构" class="headerlink" title="三层架构"></a>三层架构</h2><p>在计算机本身的架构中或者网络的架构中，可以看到：到处都有分层的例子。当用分层的观点来考虑系统时，可以将各个子系统想像成按照“多层蛋糕”的形式来组织，每一层都依托在其下层之上。在这种组织方式下，上层使用了下层定义的各种服务，而下层对上层一无所知。另外，每一层对自己的上层隐藏其下层的细节。<br>比如ISO/OSI七层协议模型。<br><img src="/img/content/ddd/iso.png" srcset="/img/loading.gif" lazyload alt="ISO七层协议.png"><br>我们看7层协议，从上到下，越上层越靠近用户，越下层越靠近设备。<br>我们知道一个网站功能大概可以概括成这样，用户浏览页面-&gt;点击页面上的某个功能-&gt;页面上给于反馈。<br>对于开发来说，就是接收到一个请求-&gt;处理事件-&gt;存储信息-&gt;查询信息-&gt;返回请求。<br>Martin Fowler在企业应用架构模式一书中提出了应用开发架构基本上可以分为三层。</p>
+<ul>
+<li>处理请求与返回请求都是最靠近用户那一层的两个子任务组，它们两个可以放到一层。</li>
+<li>处理事件是一个子任务组，可以放到一层。</li>
+<li>存储信息与查询信息都是最接近于存储底层的，可以放到一层。</li>
+</ul>
+<p><img src="/img/content/ddd/thirdlayer.png" srcset="/img/loading.gif" lazyload alt="又是三层架构"><br>我认为，三层架构在水平层面对一个服务的功能进行了比较粗的颗粒度的区分。更初的两层架构往往是把处理请求与返回请求放到一层，认为与用户交互相关。处理事件与存储信息、查询信息放到一层，认为是机器处理。<br>我们来看三层架构这样区分之后，带来的效果。</p>
+<h3 id="三层架构的效果"><a href="#三层架构的效果" class="headerlink" title="三层架构的效果"></a>三层架构的效果</h3><h4 id="用户展示层"><a href="#用户展示层" class="headerlink" title="用户展示层"></a>用户展示层</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Controller</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">FinanceInfoController</span> &#123;<br>    <br>    <span class="hljs-keyword">private</span> OrganizationService organizationService;<br>    <br>    <span class="hljs-keyword">private</span> FinanceService financeService;<br>    <br>    <span class="hljs-meta">@RequestMapping(&quot;/queryFinanceInfo.json&quot;)</span><br>    <span class="hljs-keyword">public</span> FinanceInfo <span class="hljs-title function_">queryFinanceInfo</span><span class="hljs-params">(<span class="hljs-meta">@RequestParam</span> String orgNo)</span>&#123;<br>        <span class="hljs-type">Organization</span> <span class="hljs-variable">org</span> <span class="hljs-operator">=</span> organizationService.get(orgNo);<br>        <span class="hljs-type">Finance</span> <span class="hljs-variable">finance</span> <span class="hljs-operator">=</span> financeService.get(orgNo);<br>        <span class="hljs-type">FinanceInfo</span> <span class="hljs-variable">financeInfo</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">FinanceInfo</span>(org, finance);<br>        <span class="hljs-keyword">return</span> financeInfo;<br>    &#125;<br>    <br>&#125;<br></code></pre></td></tr></table></figure>
+<p>我们可以看到，展示层专注于处理用户的请求。如果这时候页面发生了改变，我们可以将返回的FinanceInfo进行修改，而Service的业务处理可以不做修改。</p>
+<h4 id="业务逻辑层。"><a href="#业务逻辑层。" class="headerlink" title="业务逻辑层。"></a>业务逻辑层。</h4><p>我们可以看业务按一定规则分层几个Service，一个业务逻辑或以分散到各个Service中，如果要修改某个业务，我们可以只修改到对应的Service.</p>
+<h4 id="数据访问层。"><a href="#数据访问层。" class="headerlink" title="数据访问层。"></a>数据访问层。</h4><p>三层结构相对于两层结构，是把业务处理与数据访问分隔开来。<br>个人认为早些时候，分开的价值不大。一是早些时候数据库比较固定，一个公司一旦使用了某个数据库，基本上就不会再改变了。而是原来的软件设计是从设计往往是先设计表结构，然后基于表结构来进行开发。数据库的结构变动往往伴随着业务逻辑的变动。之所以分开，我觉得更多是人员安排上的需求。你可以让一个不了解业务的但精通SQL的开发来专注于写DAO层，而让精通于业务的开通更聚焦于写业务逻辑。然而，从毕业到现在，全栈工程师见得多了，但专职于写DAO的工程师还真没见过。</p>
+<h3 id="三层架构的不足"><a href="#三层架构的不足" class="headerlink" title="三层架构的不足"></a>三层架构的不足</h3><p>三层架构已经流行了很长一段时间，虽然设计的初衷是美好的，所有的业务逻辑都有不同的Service来实现，Controller只负责聚合。但是在大多数情况下，开发是不怎么懂业务的，他们每天做的事情，是由产品把prd出出来，然后将prd翻译成代码。而这就造成了很多Service的混乱。混乱的情况大概会有这么几种</p>
+<h4 id="一个Service打天下"><a href="#一个Service打天下" class="headerlink" title="一个Service打天下"></a>一个Service打天下</h4><p>我上面写到的FinanceService一样，看名字，就是跟财务相关的所有业务都在这个Service中实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Service</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">FinanceService</span> &#123;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 获取收入</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@return</span></span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-keyword">public</span> Map&lt;String,Object&gt; <span class="hljs-title function_">getRevenue</span><span class="hljs-params">()</span>;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 获取成本项</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> bizNo</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@return</span></span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-keyword">public</span> List&lt;Cost&gt; <span class="hljs-title function_">queryCost</span><span class="hljs-params">(List&lt;String&gt; bizNo)</span>;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 更新成本项</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> bizNo</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> cost</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@return</span></span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-keyword">public</span> Cost <span class="hljs-title function_">updateCost</span><span class="hljs-params">(String bizNo, Cost cost)</span>;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 省略其余几十个方法</span><br><span class="hljs-comment">     */</span><br><br>&#125;<br></code></pre></td></tr></table></figure>
+<h4 id="多个Service代表同一个意思"><a href="#多个Service代表同一个意思" class="headerlink" title="多个Service代表同一个意思"></a>多个Service代表同一个意思</h4><p>要么就是每次产品迭代的时候，根据当时的需求来新建一个Service,比如<br>FinanceCostService<br>FinanceCostProfitService<br>FinanceCostAnaliticService<br>这三个Service分别是三个不同的开发写的，第一个接到的需求是要处理公司的成本。第二个接到的需求是需要给老板一个可以看到成本项与利润的报表，开发一看，成本数据库表知道在哪了，简单，建一个Service，写一个Mapper，返回，搞定。第三个开发接到的是运营的需求，需要对成本项按照一定规则进行分析，得到分析结果。开发一看，成本数据库表知道在哪了，简单，建一个Service，写一个Mapper，返回，搞定。</p>
+<h4 id="多个Service都在更新同一个对象"><a href="#多个Service都在更新同一个对象" class="headerlink" title="多个Service都在更新同一个对象"></a>多个Service都在更新同一个对象</h4><p>还是拿上面一个例子<br>如有两个Service:<br>FinancePoService:财务采购单据Service</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Service</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">FinancePoService</span> &#123;<br>    <br>    <span class="hljs-meta">@Resource</span><br>    <span class="hljs-keyword">private</span> PurchaseOrderMapper purchaseOrderMapper;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">updatePurchaseOrderStatus</span><span class="hljs-params">(String poNo,<span class="hljs-type">int</span> status)</span>&#123;<br>        purchaseOrderMapper.updateSatus(poNo, status);<br>    &#125;<br>    <br>&#125;<br></code></pre></td></tr></table></figure>
+<p>PoCustomerService:采购单据客服Service</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Service</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">PoCustomerService</span> &#123;<br>    <br>    <span class="hljs-meta">@Resource</span><br>    <span class="hljs-keyword">private</span> PurchaseOrderMapper purchaseOrderMapper;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">updatePurchaseOrderStatusByPoNo</span><span class="hljs-params">(String poNo,<span class="hljs-type">int</span> status)</span>&#123;<br>        purchaseOrderMapper.updateSatus(poNo, status);<br>    &#125;<br>    <br>&#125;<br></code></pre></td></tr></table></figure>
+<p>两个Service都在更新一个采购单据状态。这时候，我们如果发现一个采购单据发生问题，我们就很难发现问题究竟出现在哪里。更有甚者，分别有几个不同的controller或者service分别调用这两个不同的service.这就更混乱了。</p>
+<h3 id="三层架构往后发展"><a href="#三层架构往后发展" class="headerlink" title="三层架构往后发展"></a>三层架构往后发展</h3><p>从上面几个例子我们可以看到，三层架构解决了一部分问题，但究其根本，Service还是还过于庞大了，而且没有规范。你可以说是因为写代码的人水平不高，才造成的上面几个问题。但是在软件开发过程中，总是会有各式各样的开发人员。你不可能指望每个人的水平都很高，即使水平都很高，每个人的想法也会不一样。既然原因是Service过于庞大，那我们应该想一下怎么样把Service拆分。<br>刚才说到，很多开发人员不懂业务，所以不知道怎么设计Service才是合理的。这就造成了Service中核心逻辑与其它业务逻辑混合在一块，纠缠在一起，如果我们可以把Service中的核心逻辑都摘出来，单独放在一个地方，整个架构如下图所示<br><img src="/img/content/ddd/fourlayer.png" srcset="/img/loading.gif" lazyload alt="核心逻辑层架构.png"><br>可以看到，不管业务逻辑怎么改变，我们的核心逻辑是稳定的。只要不涉及到核心逻辑的改变，那么我们就可以大致的认为，当前业务是安全的。<br>那么怎么把核心逻辑提取出来了，这就需要对业务有一定的了解了。我们接下的介绍的DDD就与此有关。</p>
+<h2 id="DDD-领域驱动"><a href="#DDD-领域驱动" class="headerlink" title="DDD(领域驱动)"></a>DDD(领域驱动)</h2><p>领域驱动设计（Domain Driven Design, DDD）是由Eric Evans提出的软件系统设计的面象对象建模方式。它不是一种架构，也不是一个框架。我认为它是一种思维方式，一种思想。帮助开发人员怎么样才能更好的处理好复杂的软件项目开发。<br><img src="/img/content/ddd/ddd.png" srcset="/img/loading.gif" lazyload alt="领域驱动开发流程.png"><br>前文我们说过，三层架构的主要问题在于，开发一般是不懂业务的，拿一个需求来做一个需求，多次迭代之后就容易造成混乱。在领域设计就是建立了一种思维方式，让我们了解怎么样才能更好的把核心逻辑提炼出来。<br>这里不太过多的介绍DDD,后面再详细说明。我们理解简单理解DDD的主题思想是需要开发团队与某个领域方面的专家进入业务上的沟通，并互相理解对方的语言，开发团队要了解领域内的术语，领域专家要大概懂开发团队是怎么画图的。互相沟通，进而不断迭代测试，实现核心逻辑。</p>
+<h3 id="领域驱动经典四层分层架构"><a href="#领域驱动经典四层分层架构" class="headerlink" title="领域驱动经典四层分层架构"></a>领域驱动经典四层分层架构</h3><p>Eric在领域驱动设计一书中在提出了一个四层分层架构。<br><img src="/img/content/ddd/domain4.png" srcset="/img/loading.gif" lazyload alt="领域驱动四层架构.png"><br>书中对这四层的职责是这样描述的</p>
+<table>
+<thead>
+<tr>
+<th>User Interface Layer</th>
+<th>负责向用户显示信息和解释用户指令，这里指的用户可以是另一个计算机系统，不一定是使用用户界面的人</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Application Layer</td>
+<td>定义软件要完成的任务，并且指挥表达领域概念的对象来解决问题，这一层所负责的工作对业务来说意义重大，也是与其他系统的应用层进行交互的必要渠道。</td>
+</tr>
+<tr>
+<td>应用层要尽量简单，不包含业务规则或者知识，而只为下一层中的领域对象协调任务，分配工作，使它们相互协作。它没有反映业务情况的状态，但是却可以具有另外一种状态，为用户或程序显示某个任务的进度。</td>
+<td></td>
+</tr>
+<tr>
+<td>Domain Layer</td>
+<td>负责表达业务概念，业务状态信息及业务规则。尽管保存业务状态的技术细节是由基础设施层实现的。但是反映业务状态的是由本层控制并且使用的。领域层是业务软件的核心</td>
+</tr>
+<tr>
+<td>Infrastructure Layer</td>
+<td>为上面各层提供通用的技术行为，为应用层传送消息，为领域层提供持久化机制，为用户界面层绘制屏幕组件等等。基础设施层还能够通过架构框架来支持4个层次间的交互模式。</td>
+</tr>
+</tbody></table>
+<p>个人认为，Eric提出的四层架构，本质上来说就是利用DDD思想将三层架构中的核心逻辑抽来，形成domain Layer。其它的与三层架构的驱别不大。</p>
+<h3 id="六边形架构-Hexagonal-Archetecture"><a href="#六边形架构-Hexagonal-Archetecture" class="headerlink" title="六边形架构-Hexagonal Archetecture"></a>六边形架构-Hexagonal Archetecture</h3><p>这里把六边形架构放在DDD目录下，并不是因为六边形架构跟DDD绑定起来，而是DDD结合六边形架构，可以达到更好的效果。<br>六边形架构是由Alistair Cockburn在2005年提出的，这里我们还是借助于三层架构与四层架构来说明一下。<br>三层架构与四层架构理论上是可以把表示层与业务层分开的，但也会出现一些开发是会把一些业务代码直接写在controller层，跳过业务层或者领域层。或者说开发在原本应该在领域层或者业务层实现代码写到数据源层。这就又造成了一种混乱，业务逻辑与表现层或者数据源层紧紧耦合在一起，与架构设计的初衷相违背了。大多数的第一反应还是说这是开发的水平问题。但我觉得这是一种开发方式的问题。还是那句话，开发人员水平有好有差，架构就是要说明出一个应用中存在哪些东西，怎么组合，同时，也要规范不同的做事方式来达到架构设计的初衷。我们先来看一下六边形架构。<br><img src="/img/content/ddd/six.gif" srcset="/img/loading.gif" lazyload alt="六边形架构"><br>假设我们现在把开发方式改成不需要管外部输出什么了，也不用管要把数据存成什么格式。只专注于业务逻辑的开发。我们开发一个应用，需要什么的数据进来，就规范出一个对象参数。我们需要什么数据出去，就规范出一个返回对象。<br>这样，我们不受表现层与数据源层的影响了，所有实现在应用中的都是业务逻辑。<br>最后，我们把应用与表示层、数据源层对接。有几个客户端，我们用几个适配器将客户端的数据转换成应用的数据格式。有几中数据源层，我们用几个适配器将应用的数据格式转换数据源所需要的格式。我理解这就是六边形架构的思想。<br>没有表示层与数据源层开发听起来是不是与DDD有点像，DDD的核心也是与领域专家交流，形成一个的核心的业务逻辑。<br><img src="/img/content/ddd/sixdomain.png" srcset="/img/loading.gif" lazyload alt="六边形架构.png"><br>我们再回到六边形架构，六边形架构将三层架构中的表示层与数据源层看成是同一种。六边形架构不是跟有几条边没有关系，你愿意的话，也可以画一个八边形叫八边形架构。六边形讲的是一个对称的概念。分层有高低之分，左右代表在同一层，没有高低之分。这里的对称说的是不管是输入还是输出，在六边形架构里是同一个概念。<br>三层架构与六边形架构主要的区别，还在于说表示层与数据源层是不是对称、平等的问题。<br>Martin Fowler在企业应用架构模式一书的2010版中对该区别作了说明：</p>
+<blockquote>
+<p>“然而，我认为这种非对称性是有益的。因为，为别人提供服务的接口与使用别人服务的接口存在较大的差别，需要明确区分。这就是表现层和数据源层相对于核心的本质差别。表现层是系统对外提供服务的外部接口，不管外面是复杂的人类还是一个简单的远端程序。数据源层是系统使用外部服务的接口。这样区分的好处是：客户的不同将改变你对服务的看法。”</p>
+</blockquote>
+<p>Martin所说的客户的不同将改变你对服务的看法，我的理解是，我们一般会在数据源层进行一些事务处理、连接池处理，在对外提供服务的外部接口一般不存这些问题。所以分开更合适。<br>我们再来看六边形架构，个人认为只在应用程序产生的结果存储起来(这里的存储是在应用层)，而通过不同的适配器再传导出去，这样的应用一般不需要数据强一致性，那么六边形架构更合适，因为这时的输入输出并没有什么更多的区别。<br>如果数据需要实时影响到结果，如调用接口进行数据存储并确认，那么，三层架构更为合适。</p>
+<h3 id="洋葱架构-Onion-Architecture"><a href="#洋葱架构-Onion-Architecture" class="headerlink" title="洋葱架构-Onion Architecture"></a>洋葱架构-Onion Architecture</h3><p><img src="/img/content/ddd/yangcong.webp" srcset="/img/loading.gif" lazyload alt="洋葱架构"><br>洋葱架构是Jeffrey Palermo在08年提出来的，与六边形架构有着大致相同的思路。他们的区别是，一个是圆形，一个是六边形，都很对称，哈哈。。。，我们看到，不管是圆还是六边形，封闭的架构图一般都意味着外层把里层包裹起来，只能是外层依赖于里层，里层不能依赖于外层。<br>六边形架构提出的时候并没有考虑到领域驱动，洋葱相比于六边形架构，实现了更多Eric领域驱动的内容，即最内层不只是一个Application了，而是分的更细。所以个人认为洋葱架构是六边形架构与领域四层架构的结合体。这里的Domain Service与Domain Model这里就先不过多说明了，后面我们讲DDD的时候再展开。</p>
+<h3 id="DCI架构"><a href="#DCI架构" class="headerlink" title="DCI架构"></a>DCI架构</h3><p>小的时候看灌篮高手，我是一个天才是樱木的口头禅。当他在与晴子练球时说出我是一个天才时，晴子的反应是是的，樱木真是一个天才。而他在球场上比赛时说出我是一个天才时，流川往往会跳出来说：白痴。 在现实世界中，不同的场景，同一件事被理解的角度不一样。我们可以理解为，世界是由不同的场景构造出来的，一个模型只有在一个场景下才会有意义。<br>之前我们说过，我们在三层架构开的时候，常常会因为Service中的方法太多，造成了程序的混乱。那么，创建好一个DDD模型之后，就万无一矢么。举一个例子。我们抽象出来一个人的模型。那么人的固定行为就表现为一个个方法。</p>
+<p>一个人所能做的事情是很多的，当你要把人的所有现实行为都反映到一个对象中去后，你会发现，不知不觉中，你又创建了一个上帝类。<br>Jon Kern认为，“不要试着把对象在现实世界中可以想象到的行为都实现到设计中去。相反，只需要让对象能够合适于应用系统即可。对象能做的，所知的最好是一点不多一点不少。”<br>对此，我们在DDD中通常的做法是在DomainService中描绘出对象在现实数据中可以提供的服务。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">PeopleService</span> &#123;<br><br>    <span class="hljs-keyword">private</span> PeopleFactory peopleFactory;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">teach</span><span class="hljs-params">()</span>&#123;<br>        <span class="hljs-type">People</span> <span class="hljs-variable">people</span> <span class="hljs-operator">=</span> peopleFactory.create(<span class="hljs-number">9527</span>);<br>        people.talk();<br>        people.write();<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">date</span><span class="hljs-params">()</span>&#123;<br>        <span class="hljs-type">People</span> <span class="hljs-variable">bohu</span> <span class="hljs-operator">=</span> peopleFactory.create(<span class="hljs-number">9527</span>);<br>        <span class="hljs-type">People</span> <span class="hljs-variable">qiuxiang</span> <span class="hljs-operator">=</span> peopleFactory.create(<span class="hljs-number">1</span>);<br>        bohu.talk();<br>        qiuxiang.talk();<br>    &#125;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 此处省略十几个方法</span><br><span class="hljs-comment">     */</span><br><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>这样，PeopleService将一个人的具体社交行为体现了出来，代表当ApplicationService中接收到一个需求时，我们通过PeopleService来反映，通过组合People的本能行为方法来实现。<br>看起来很完美！<br>但还是那个问题，这里的PeopleService没有一个具体的约束。比如苏炳添，他是一个老师，他教学生跑步的理论课，用讲跟画图就行了。同时，他也是一个教练，他要给学生示范跑步，就得真跑起来。那么我们在PeopleService里写法就会变成</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">PeopleService</span> &#123;<br><br>    <span class="hljs-keyword">private</span> PeopleFactory peopleFactory;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">teachRunTheory</span><span class="hljs-params">()</span>&#123;<br>        <span class="hljs-type">People</span> <span class="hljs-variable">people</span> <span class="hljs-operator">=</span> peopleFactory.create(<span class="hljs-number">666</span>);<br>        people.talk();<br>        people.draw();<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">teachRunAction</span><span class="hljs-params">()</span>&#123;<br>        <span class="hljs-type">People</span> <span class="hljs-variable">people</span> <span class="hljs-operator">=</span> peopleFactory.create(<span class="hljs-number">666</span>);<br>        people.run();<br>        people.talk();<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">teach</span><span class="hljs-params">()</span>&#123;<br>        <span class="hljs-type">People</span> <span class="hljs-variable">people</span> <span class="hljs-operator">=</span> peopleFactory.create(<span class="hljs-number">9527</span>);<br>        people.talk();<br>        people.write();<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">date</span><span class="hljs-params">()</span>&#123;<br>        <span class="hljs-type">People</span> <span class="hljs-variable">bohu</span> <span class="hljs-operator">=</span> peopleFactory.create(<span class="hljs-number">9527</span>);<br>        <span class="hljs-type">People</span> <span class="hljs-variable">qiuxiang</span> <span class="hljs-operator">=</span> peopleFactory.create(<span class="hljs-number">1</span>);<br>        bohu.talk();<br>        qiuxiang.talk();<br>    &#125;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * 此处省略几十个方法</span><br><span class="hljs-comment">     */</span><br><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>想像一下，当有几十几百个苏炳添这样的对象出现之后，PeopleService。。。又乱了。<br>那我们怎么整理这个乱象。<br>软件设计终究是由人做出的决策，在提出一种设计方法时，若能从人的思维模式着手，就容易找到现实世界与模型世界的结合点。<br>结合上述所说的，我们知道PeopleService缺少一种规范，我们试着来规范一下。<br>像柏拉图的人生终极问题，”我是谁，从哪来，到哪去”。我们描述一个小场景可以用,”做什么，怎么做，具体的步骤”。<br><img src="/img/content/ddd/dci.png" srcset="/img/loading.gif" lazyload alt="DCI架构"><br>回到刚刚的PeopleService，我们发现，PeopleService里的行为可以抽象出来一个个角色。比如体育课老师是一种角色，教练员是一种角色。代码变成这样</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">PhysicalTeacher</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">teach</span><span class="hljs-params">()</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">Coach</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">teachRun</span><span class="hljs-params">()</span>;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">People</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">PhysicalTeacher</span>,Coach&#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">teach</span><span class="hljs-params">()</span> &#123;<br><br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">teachRun</span><span class="hljs-params">()</span> &#123;<br><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>我们看到，由Role代替掉了DomainService,职责更清晰。这样，People的方法更多了，但是具体相应职责的角色，来进行整体的调度，隐藏掉了People直接出去的混乱感，不在Role中需要的有People中不必呈现。整体上来看，Role的引入，把DomainService这一层的混乱给整理了。<br>我们之前说，事件的发生都是在特定的场景下的，比如苏炳添是在训练场里教导学生，在教室里面讲课。同一时间，苏炳添不会既在教室里讲课也在训练场里。这里，我们再引入一个场景。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TrainContext</span> &#123;<br>    <br>    <span class="hljs-keyword">private</span> Coach coach;<br>    <br>    <span class="hljs-keyword">private</span> Student student;<br>    <br>    <span class="hljs-keyword">private</span> PeopleFactory peopleFactory;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">trainTeach</span><span class="hljs-params">()</span>&#123;<br>        coach = peopleFactory.create(<span class="hljs-number">666</span>);<br>        student = peopleFactory.create(<span class="hljs-number">333</span>);<br>        coach.teachRun();<br>        student.run();<br>    &#125;<br><br>&#125;<br><br></code></pre></td></tr></table></figure>
+<p>以上就是DCI架构要表达的内容。<br>DCI 模式认为，在现实世界到对象世界的映射中，构成元素只有三个：数据（Data）、上下文（Context）和交互（Interaction）。<br><img src="/img/content/ddd/dci2.webp" srcset="/img/loading.gif" lazyload alt="DCI架构"><br>关于DCI的理论与场景驱动我们另外开一个篇幅来说明，这里就不具全的讨论了。</p>
+<h3 id="整洁架构-Clean-Architecture"><a href="#整洁架构-Clean-Architecture" class="headerlink" title="整洁架构(Clean Architecture)"></a>整洁架构(Clean Architecture)</h3><p><img src="/img/content/CleanArchetecture.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>整洁架构是由Robert C. Martin在2012年的提出的，把前面所说的六边形架构、DCI架构、洋葱架构做了一个总结,Martin认为这些架构都具有以下几个特点。<br>他们都有同样的目标，隔离关注点。他们都通过将软件分层来达到隔离。每个都至少有一层业务规则，另一层作为接口。<br>每个这些架构产出的系统都是：</p>
+<ol>
+<li>独立的框架。架构不依赖一些存在类库的特性。这样你可以像工具一样使用这种框架，而不需要让你的系统受到它的约束条件。</li>
+<li>可测试。业务规则可以脱离UI，数据库，web服务器或其他外部元素进行测试。</li>
+<li>独立的UI。UI可以很容易的更换，系统的其他部分不需要变更。例如，Web UI可以被换成控制台UI，不需要变更业务规则。</li>
+<li>独立的数据库。你可以交换Oracle或SQL Server，用于Mongo，BigTable，CouchDB或其他的东西。你的业务规则不与数据库绑定。</li>
+<li>独立的外部代理。实际你的业务规则并不知道关于外部世界的任何事情。</li>
+</ol>
+<p>这里主要是想说明两个点，Martin这里画的4个圈，不是代表整洁架构就分为四层，这里的圈只是代表外层依赖于内层。比如你可以在Use Case层与Entities层中间再加一层，DomanService层。你要是觉得还可以再拆分。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>应用架构的存在，是了使一个应用的代码从混乱变得有序。尤其在多人参与开发的情况下，人数越多，熵越大。整洁有序的架构可以缓解熵增，但阻止不了，绝大部分的软件开发经过一段时间之后，都很难保持整洁。以上介绍了几个架构，提供了一些拆分应用的思路，但应用架构不是固定的，要根据自己业务，选择适合自己的最好。不要太拘泥于多一层少一层，其实并没有啥关系，只要你能通过某样形式组织好你的业务代码，使其可以最小化修改，测试，我觉得都是一个好的架构。<br>另外，国内有很多人在这些架构之后根据自己做的业务情况发展出了很多架构，我们看这些架构的时候，重要的是看他们应用于什么场景，能不能帮助很好的管理好你的应用。不要把一些高大上的图或者名字迷惑，本质上，应用架构没那么复杂。你要愿意的话，也可以画一个圆形两层架构，西瓜架构，外一层，里一层。。。</p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%9E%B6%E6%9E%84/" class="category-chain-item">架构</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/DDD/">#DDD</a>
+      
+        <a href="/tags/%E5%85%AD%E8%BE%B9%E5%BD%A2%E6%9E%B6%E6%9E%84/">#六边形架构</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>DDD与应用架构</div>
+      <div>http://www.3world.top/2022/11/17/DDD与应用架构/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>胖子笑西风</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年11月17日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/11/17/CQRS%E4%B8%8EEvent%20Sourcing/" title="CQRS与Event Sourcing">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CQRS与Event Sourcing</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div class="disqus" style="width:100%">
+    <div id="disqus_thread"></div>
+    
+      <script type="text/javascript">
+        var disqus_config = function() {
+          this.page.url = 'http://www.3world.top/2022/11/17/DDD%E4%B8%8E%E5%BA%94%E7%94%A8%E6%9E%B6%E6%9E%84/';
+          this.page.identifier = '/2022/11/17/DDD%E4%B8%8E%E5%BA%94%E7%94%A8%E6%9E%B6%E6%9E%84/';
+        };
+        Fluid.utils.loadComments('#disqus_thread', function() {
+          var d = document, s = d.createElement('script');
+          s.src = '//' + 'fluid' + '.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', new Date());
+          (d.head || d.body).appendChild(s);
+        });
+      </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+  </div>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?ce2e798b1c31297dd7ece0242cac0a2b";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+    <!-- Google gtag.js -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript('https://www.googletagmanager.com/gtag/js?id=G-MBPFGDQNG5', function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-MBPFGDQNG5');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

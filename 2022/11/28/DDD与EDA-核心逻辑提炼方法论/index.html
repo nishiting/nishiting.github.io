@@ -1,0 +1,838 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="胖子笑西风">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="在【DDD与应用架构】一文中我们说过，应用架构的存在就是为了把一团混沌的代码变得有秩序，好管理。我们保持最核心逻辑不变，就可以保持系统的稳定与发展。领域驱动设计的作者Eric Evans 说：“为了使领域模型成为有价值的资产，必须整齐地梳理出模型的真正核心，并完全根据这个核心来创建应用程序的功能”。那么问题来了，我们要怎么梳理出模型的真正核心呢？Eric是这么说的:  “对模型进行提炼。找到COR">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DDD与EDA-核心逻辑提炼方法论">
+<meta property="og:url" content="http://www.3world.top/2022/11/28/DDD%E4%B8%8EEDA-%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91%E6%8F%90%E7%82%BC%E6%96%B9%E6%B3%95%E8%AE%BA/index.html">
+<meta property="og:site_name" content="胖子笑西风">
+<meta property="og:description" content="在【DDD与应用架构】一文中我们说过，应用架构的存在就是为了把一团混沌的代码变得有秩序，好管理。我们保持最核心逻辑不变，就可以保持系统的稳定与发展。领域驱动设计的作者Eric Evans 说：“为了使领域模型成为有价值的资产，必须整齐地梳理出模型的真正核心，并完全根据这个核心来创建应用程序的功能”。那么问题来了，我们要怎么梳理出模型的真正核心呢？Eric是这么说的:  “对模型进行提炼。找到COR">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.3world.top/img/content/eda/babieta.png">
+<meta property="article:published_time" content="2022-11-28T10:26:30.000Z">
+<meta property="article:modified_time" content="2023-01-31T05:47:56.000Z">
+<meta property="article:author" content="胖子笑西风">
+<meta property="article:tag" content="EDA">
+<meta property="article:tag" content="Event Sourcing">
+<meta property="article:tag" content="DDD">
+<meta property="article:tag" content="事件驱动">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://www.3world.top/img/content/eda/babieta.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>DDD与EDA-核心逻辑提炼方法论 - 胖子笑西风</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"www.3world.top","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"ce2e798b1c31297dd7ece0242cac0a2b","google":null,"gtag":"G-MBPFGDQNG5","tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>胖子笑西风</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/content/eda/babieta_big.jpeg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="DDD与EDA-核心逻辑提炼方法论"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-11-28 18:26" pubdate>
+          2022年11月28日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          67 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">DDD与EDA-核心逻辑提炼方法论</h1>
+            
+            <div class="markdown-body">
+              
+              <p>在【<a target="_blank" rel="noopener" href="http://3world.top/2022/11/17/DDD%E4%B8%8E%E5%BA%94%E7%94%A8%E6%9E%B6%E6%9E%84/">DDD与应用架构</a>】一文中我们说过，应用架构的存在就是为了把一团混沌的代码变得有秩序，好管理。我们保持最核心逻辑不变，就可以保持系统的稳定与发展。领域驱动设计的作者Eric Evans 说：“为了使领域模型成为有价值的资产，必须整齐地梳理出模型的真正核心，并完全根据这个核心来创建应用程序的功能”。那么问题来了，我们要怎么梳理出模型的真正核心呢？Eric是这么说的:</p>
+<blockquote>
+<p>“对模型进行提炼。找到CORE DOMAIN并提供一种易于区分的方法把它与那些起辅助作用的模型和代码分开。最有价值和最专业的概念要轮廓分明。尽量压缩CORE DOMAIN。<br>让最有才能的人来开发CORE DOMAIN，并据此要求进行相应的招聘。在CORE DOMAIN中努力开发能够确保实现系统蓝图的深层模型和柔性设计。仔细判断任何其他部分的投入，看它是否能够支持这个提炼出来的CORE。”<br>摘录来自<br>领域驱动设计：软件核心复杂性应对之道<br>[美] 埃里克 埃文斯（Eric Evans）</p>
+</blockquote>
+<p>这里我必需提一下Eric说的上下文，避免造成误会。Eric说这段话是说大部分优秀的开发人员都去进行基础设施建设了，而能力差的那些常常会去设计数据库，无休止的进行CURD。我个人比较赞同这种观点。领域设计可能需要大家在观念上有所转变，现在大多数开发都属于业务开发，业务开发最重要的不是说对一些基础设施了解的有什么深入，而是应该对你所属的行业了解到一定程度，能够刻画你所属的行业的核心业务逻辑。这里不是说搞明白基础设施不重要，而是现有的软件开发基础设施已经比较完善，借助于分布式，中间件，很多公司的开发人员都能构建一个比较可靠的秒杀系统了，高并发、大流量这些前些年听起来很酷炫的技能现在可能随处可见。而业务人员未来的竞争力可能会在于对某种垂直行业的认知，而这些认知，能帮助你成为Eric文中有才能的人。当然，成为真正有才能的人，可能还需要了解一些方法论，帮助你更好的刻画领域。</p>
+<h1 id="看待问题的角度"><a href="#看待问题的角度" class="headerlink" title="看待问题的角度"></a>看待问题的角度</h1><p>场景一：<br>西风公司的数据智能部门需要对公司楼下的早餐店进分析，想看看公司在餐饮行业有没有机会。于是派了公司的两个数据大佬西哥与风哥去调研。<br>一天之后，西风与风哥分别分享了自己的调查情况。<br><strong>西哥的调研报告</strong></p>
+<blockquote>
+<p>5:30AM  早餐店门打开了<br>6:00AM   包子蒸好了<br>6:10AM    豆浆做好了<br>6:30AM    包子出售了10个，豆浆出售了20个。支付宝收到金额35元，支付收到金额25元。<br>。。。。</p>
+</blockquote>
+<p><strong>风哥的调研报告</strong></p>
+<blockquote>
+<p>老板与老板娘两个人一大早打开了早餐店，并且开始蒸包子，做豆浆。做蒸包子的时候，老板娘又去门口把今天包子与豆浆的易拉宝上。易拉宝上记录着今天早餐店的优惠价格。<br>早的时候，大部分都是楼旁边小区的居民出来买，居民们大多时候都是慢慢悠悠的走过来，包子豆浆一块买，老人家一般会自带盆，让老板把早餐装盆里，有些还会坐在店里吃。快到上班的时候，很多白领会跑着过来，快速的选择已经打包好的组合套餐，拎着就往楼上跑。。。</p>
+</blockquote>
+<p>场景二：<br>小西与小风都是艾薇儿的忠实粉丝，一天，小西与小风同时收到艾薇儿的新歌海报推送。<br>小风一看艾薇儿出新歌了，立马打开音乐播放器，听了起来。<br>小西则看着海报，艾薇儿把头发染成了蓝色，身穿黑红相间的卫衣，身上挂着一把吉它，右手指向前方。<br>“不愧是女神，还是这么酷这么朋克”，小西慢慢的欣赏着海报。</p>
+<p>以上的两个场景可能我们中的大部分都经历过，一千个读者就一千个哈姆雷特，每个人看待世界的角度都是不同的。因此，我们想要提炼出core domain,首先我们要先明确一个点，我们站在哪个角度看待问题的。</p>
+<h2 id="时间维度"><a href="#时间维度" class="headerlink" title="时间维度"></a>时间维度</h2><p>即使有理论去说明我们可以穿越时间，但毕竟都没实现过。所以我们可以这么认为，时间是最稳定的东西。任何事务肯定会在时间的长河上留下足迹，并且一旦留下足迹，肯定是一成不变的。<br>我们按时间的维度来描述事情，一般会说，某时某刻发生了什么事。这里的【事】我们可以理解为事件，某时某刻一个什么事件发生了。比如场景二中，小风收到艾薇儿的新歌海报推送，就是那个时刻，【艾薇儿发新歌】这个事件发生了。<br>那么，我们站在时间的维度上，只要在一个完整的业务周期内把这个时间线内的所有事件描述出来，就能通过事件来驱动整个业务的运行。EDA，Event Driven Architecture，事件驱动架构，描述的就是这个。驱动，英语单词Driven。我们平常说驱动，一般用在汽车发动机上，有一台发动机，加上一些组件，就能让汽车跑起来。我理解的驱动就是一个核心，加上一些组件，保证业务的运行。EDA这里事件就是核心，以事件为核心，加上一些组件，比如事件的发送方、事件的接收者，事件的响应方法等，从而保证业务的运行。</p>
+<h2 id="空间维度"><a href="#空间维度" class="headerlink" title="空间维度"></a>空间维度</h2><p>更多的时候，我们看待问题会更加的感性一些，谁谁谁在什么地方干了什么事，而并不在意时间。英语单词(Party-Place-Thing),取首字母PPT,来说明谁在什么地方干了什么事。在业务需求描述中，只要发现领域概念与人、组织机构、地点或物品相关，我们就就可以识别其为 PPT 对象。比如场景一中风哥的调研报告，老板、老板娘两个店铺拥有者在店里打开了门，在店里蒸了包子等。<br>DDD(Domain Driven Design)，领域驱动设计，如EDA一样，这里是以领域为核心的。而领域，常常是跟某个领域方面的专家交流，在于专家的交流中抽象出来的模型。空间维度，我们更适合使用DDD来进行领域设计。<br><img src="/img/content/eda/domainDriven.png" srcset="/img/loading.gif" lazyload alt="领域驱动设计"></p>
+<h2 id="选择"><a href="#选择" class="headerlink" title="选择"></a>选择</h2><p>上面我们介绍的时间维度与空间维度来提炼出核心逻辑，那我们怎么选择呢。<br>我们看到，时间在企业应用中最大的用处是可追溯，假设说你的应用场景中追溯是比较重要的，如果缺少对某个东西的记录，就会影响到商业的运营和管理，或者引起法律上的纠纷。那么，你应该从时间角度来进行切入。比如笔者现在从事的财务与会计工作，财务上的每一笔账都要往前追溯，以满足审计的需要，这样，通过以时间维度构建出来的事件，可以追溯到每个费用的发生情况。再加上cqrs中的命令的话，可以更往前追溯到系统中的操作情况。<br>另外，如果你的应用并没有追溯的需求，或者是只有偶尔有追溯的需求，大部分时间业务都是在执行自己本身的工作，那可能从空间上描述更为合适。如笔者之前从事的天猫工作台有一个功能，小二需要商家关于商品售卖的信息，会给商家下发一个Excel模板，让商家填写之后提交。看似跟时间事件相关，商家某时某刻填了完了Excel上传，会发生一个Excel上传事件，小二根据Excel上传事件来进行运营操作。但事实上，小二并不关心商家什么时候上传了表格，商家实在太多了，要是一个提交后就要操作，那得累死小二。小二只是在截止日之前，去看一下哪些商家没提交，没提交的去提醒一下而已，至于商家到底是1号还是2号提交，3点还是5点提交，小二根本不关心。这种情况下，我们更应该把精力聚焦在小二与商家本身空间上的操作，比如小二发表格、合并表格、分析。<br><img src="/img/content/eda/woqudouyao.png" srcset="/img/loading.gif" lazyload alt="我全都要.png"><br>另外，不管从时间维度还是空间维度，都是一个切入点，从时间维度进来，找到相关事件之后，还是要从间上找到对应的PPT,使事件可以在PPT中流转。从空间上PPT进行建模，可以通过时间上的事件发生，来理清PPT建模中的联系。</p>
+<h1 id="目的性"><a href="#目的性" class="headerlink" title="目的性"></a>目的性</h1><p>DDD可以很大，也可以很小。上面我们知道了怎么从哪个角度切入来提炼核心逻辑，接下我们要看一下我们要解决的问题到底是什么。我们根据开发的功能大小及重要程序可以将业务系统分为两个，一个为企业经营问题，比如电商公司，交易履约系统及涉及到企业经营性的问题。而运营提出来的操作工作台则经常处理业务功能问题。</p>
+<h2 id="企业经营问题"><a href="#企业经营问题" class="headerlink" title="企业经营问题"></a>企业经营问题</h2><p>涉及到企业经营问题系统的核心模型往往需要保持稳定性，需要慎重，不断打磨好模型，再进行实现。一个业务开发，涉及到企业经营问题系统开发，肯定要了解公司的业务，应该需要与公司的各个部门沟通好各个部分细节，集合各个部门之力，画出公司业务的全链路图，并在全链路图上抽象出模型，模型要得到相关部门的认可。</p>
+<h2 id="业务功能问题"><a href="#业务功能问题" class="headerlink" title="业务功能问题"></a>业务功能问题</h2><p>更多的时候我们接触的是业务功能的开发。你可能接收到的就是一个prd。笔者认为，功能再小，也是可以尝试DDD的，这时候的业务系统的模型不必要非要保持稳定性。DDD并不是为了完美主义者而生。行动起来，不断去迭代它。不要以为会了DDD就能解决一切问题了，DDD只是一种思想，你不随着这种思想去行动的话，一切都不会有什么改变。反之，一开始你基于认知建造了一个很粗糙的模型。可以根据你对业务的不断了解不断调整，把一个很粗糙的模型塑造成你负责的业务系统稳定模型，大家持着对某个领域的统一认知。</p>
+<h1 id="行动"><a href="#行动" class="headerlink" title="行动"></a>行动</h1><p>我们开始领域建模行动了，不管是开发关乎企业经营的应用还是做一个小功能，根据做事的方式，大概可以根据以下两种行动方式。</p>
+<h2 id="有才能的人"><a href="#有才能的人" class="headerlink" title="有才能的人"></a>有才能的人</h2><p>这里的有才能可以基本上需要具备两个特质，社牛与敏锐的分析能力。社牛可以保证你跟领域专家搞好关系，不管是一起抽个烟、还是一起喝杯咖啡，都很有助于你了解业务。敏锐的分析能力可以让你与领域专家沟通的时候可以找到哪些信息是有用的，哪些信息是无用的。<br>如果你具备了这两个特质，那就通过与领域专家进行充分交流，把每个领域专家的说出的核心步骤连接起来。再通过核心步骤提炼出核心领域模型。这里最两个重要的词</p>
+<h3 id="沟通"><a href="#沟通" class="headerlink" title="沟通"></a>沟通</h3><p>建模的时候需要与领域方面的专家进行充分交流。领域方面的专家可以是熟悉业务的产品，熟悉业务的运营等。并且两者沟通需处于同一个频道。开发需要了解业务的专用术语，业务要明白开发画的图的意思。<br>我认为，业务与开发沟通模型的时候不要拘泥于UML图等等，只要是大家都看得懂的草图，那就是好的。</p>
+<h3 id="共同"><a href="#共同" class="headerlink" title="共同"></a>共同</h3><p>与领域专家沟通，并且要共同建模，这里共同的意思时要在沟通的时候同时建模。最好在讨论的时候可以把草图画好，大家可以达到统一理解。</p>
+<h2 id="EventStorming"><a href="#EventStorming" class="headerlink" title="EventStorming"></a>EventStorming</h2><p>如果你不是一个很有才能的人，那么你可以试试EventStorming(事件风暴)。相比于一个人去了解各个业务，EventStorming工作模式更需要你当一个主持人。把相关业务方拉在一起，提供一个开会的环境。<br>像这样<br><img src="/img/content/eda/eventstormingLocation.png" srcset="/img/loading.gif" lazyload alt="eventstorming位置.png"><br>然后大家准备一些有各种颜色的便利贴，每个颜色都有各自的意义，无法互相替代。我们需要以下颜色的便利贴：<br>橘色（正方形）：Event 事件<br>蓝色（正方形）：Command 命令<br>紫色（长方形）: Policy/Process 商业政策/流程<br>黄色（小张长方形）:Actor 角色<br>黄色（长方形）:Aggregate 聚合<br>粉红色（长方形）：System 外部系统<br>红色（正方形）:Hotspot 热点<br>红色（小张长方形）:Problem 疑问<br>绿色（小张长方形）:Opportunity 机会<br>经色（正方形）：Read Model 资料读取模型<br>白色（大张正方形）：Uset Interface 使用者介面<br>再准备一些签字笔，计时器等。<br>最后组织大家对某个问题进行讨论，用便利贴组成整个事件的脉落。<br><img src="/img/content/eda/bianlitie.png" srcset="/img/loading.gif" lazyload alt="便利贴互动模式.png"><br>最后对整个会议进行整理，从而提炼出核心模型。<br>关于EventStorming,可以看一下eventstorming.com 官网的那本作者Alberto Brandolini自己写的《Introducing EventStorming》。</p>
+<h1 id="具体实施"><a href="#具体实施" class="headerlink" title="具体实施"></a>具体实施</h1><p>上文接怎么提炼核心逻辑方法论，下面我们讲讲具体实施的方案。</p>
+<h2 id="DDD"><a href="#DDD" class="headerlink" title="DDD"></a>DDD</h2><p><img src="/img/content/eda/babieta.png" srcset="/img/loading.gif" lazyload alt="巴别塔"><br>《圣经·旧约·创世纪》第11章中记录了“巴别塔”的故事。</p>
+<blockquote>
+<p>当时地上的人们都说同一种语言，人们离开东方之后，来到了示拿之地，在那里，人们想法设法烧砖希望能建造一座城和一座高耸入云的塔来传播自己的名声，以免他们被分散到世界各地，上帝来到人间后看到这座塔，说一群只说一种语言的人以后便没有他们做不成的事了，于是上帝将他们的语言打乱，这样他们就互相听不懂对方在说什么了，还把他们分散到了世界各地，这座城市也停止了修建。</p>
+</blockquote>
+<p>一群只说一种语言的人以后便没有他们做不成的事了，在任何时候，大家都会有这样的认识。同样，在任何时候，都会出现语言不同的情况。项目开发也是一样，一个公司不同项目或者不同部门，大家的语言及理解可能都会不一致。为了使事情事半功倍，就要求我们在一个小的范围内语言保持一致。然后有一个统一大局的人，把这个范围内的语言连接在一起，形成整体视图。DDD中小的范围界定有一个名称，叫BoundedContext,限定上下文。</p>
+<h3 id="BoundedContext-限定上下文"><a href="#BoundedContext-限定上下文" class="headerlink" title="BoundedContext(限定上下文)"></a>BoundedContext(限定上下文)</h3><p>Eric在领域驱动设计一书是这样说是限定上下文的：</p>
+<blockquote>
+<p>“任何大型项目都会存在多个模型。而当基于不同模型的代码被组合到一起后，软件就会出现bug、变得不可靠和难以理解。团队成员之间的沟通变得混乱。人们往往弄不清楚一个模型不应该在哪个上下文中使用”<br>模型混乱的问题最终会在代码不能正常运行时暴露出来，但问题的根源却在于团队的组织方式和成员的交流方法。因此，为了澄清模型的上下文，我们既要注意项目，也要注意它的最终产品（代码、数据库模式等）。<br>“一个模型只在一个上下文中使用。”</p>
+</blockquote>
+<p>限定上下文，我理解下来就是能够实施统一语言的一个范围。所谓上下文，就是保持理解的一致。比如利润，在财务系统中利润包含成本、收入、计算方法等，是个很重要的Entity。而在商品系统中，它只是商品的一个属性，商品只需要利润的一个总值而已。这里我们所说利润在财务与商品两个上下文中有不同的含义。<br>再说一下限定上下文与微服务。限定上下文是对于领域的划分，在一个限定上下文大家对模型的理解一致就行。而微服务更多是对应用的拆分。多个微服务应用，可以在一个限定上下文里面，比如财务域限定上下文，里面可以有结算服务、计费服务等。<br>再者就是模块与限定上下文的区分，限定上下文就不说了，模块更多的时指一下命令空间，不管是应用代码中的模块，还是业务上的模块，都是给代码或者业务加上一个空间范围。<br><img src="/img/content/eda/boundedcontext.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>不同的Bounded Context是通过Context Map来连接起来的，大多数情况下，开发只关心自己的那个域，都在自己的Bounded Context中进行开发，Context Map使不同的上下文中连接起来，形成整体的视图，一个公司的管理人员可以通过整体视图来把握来整体的业务模型。</p>
+<h3 id="Entity-实体-ValueObject-值对象"><a href="#Entity-实体-ValueObject-值对象" class="headerlink" title="Entity(实体)/ValueObject(值对象)"></a>Entity(实体)/ValueObject(值对象)</h3><p>实体与值对象网上有很多描述，这里就不过多的描述了。通常在不进行EventStorming时，我的做法往往是在与业务人员交流时，把业务人员提到的名词都给写下来，包含这些名词的属性与行为。这些名词可以是一个人、一座城市、一辆汽车、一张彩票或一次银行交易。然后再看一下出现的名词中，哪些名词所产生的实例是独一无一的，是随着时间的不同而不断变化状态的，就是实体。哪些名词是用一下就不再关心的，只是用来帮助实体完成行为的，那就是值对象。实体与值对象没有绝对的，在不同场景中有不同的解释。<br>比如说公司跟供应商之间产生了一个采购单，采购单上记录了公司的名称与供应商的名称。<br>在结算系统中，公司要与供应商算账。那么公司与供应商就是实体，采购单只是用来表示一下账有多少。用采购单算完账之后，公司与供应商还要有协商、付款等操作。这里的采购单就是值对象。<br>在计费系统中，我们需要知道根据每个采购单来算出采购的总额，这里突显的是采购这个词，公司与供应商只是用来计算的辅助项，算完这个之后，我们还要计算一下每个SKU的费用，计算一下不同账期下的抵扣费用等。这里采购单就是一个实体，公司、供应商就是值对象。</p>
+<h3 id="Aggregate"><a href="#Aggregate" class="headerlink" title="Aggregate"></a>Aggregate</h3><p>我们抽象出来的实体可能会有很多个，物以类聚，人以群分。我们可以通过对实体的组合分类，帮我们更好的理清逻辑。<br>这里引用领域驱动中Eric对聚合的定义:</p>
+<blockquote>
+<p>“AGGREGATE就是一组相关对象的集合，我们把它作为数据修改的单元。每个AGGREGATE都有一个根（root）和一个边界（boundary）。边界定义了AGGREGATE的内部都有什么。根则是AGGREGATE所包含的一个特定ENTITY。对AGGREGATE而言，外部对象只可以引用根，而边界内部的对象之间则可以互相引用。除根以外的其他ENTITY都有本地标识，但这些标识只在AGGREGATE内部才需要加以区别，因为外部对象除了根ENTITY之外看不到其他对象”</p>
+</blockquote>
+<p>我觉得Eric已经定义的比较清楚了，我一般都是看一个对象依赖于别一个对象，它们的生命周期都一致，则可以合并成一个聚合。<br>如订单系统中的订单与订单明细，我们一般只会通过订单，来查看订单明细。当订单废弃的时候，订单明细往往也跟着废弃。这时候，我们可以认为，订单与订单明细是一个聚合。<br>在平时我们做业务功能而不是影响企业经营功能的项目建模时，我甚至觉得前期大家把一个Entity当成一个聚合也没啥不好。一是一个业务功能你抽象出来的Entity不会太多，而是做业务功能是模型是不稳定的，你可以通过后期不断的迭代来进行聚合的再抽象。前期一个Entity一个聚合可以帮助你降低建模的门槛。</p>
+<h3 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h3><p>现在，我们已经抽象出来项目的Entity了，也分好聚合了。但是Entity与聚合表示是的实体的具体行为，而现实世界中有很多社交类的行为我们是无法安到Entity上的。<br>假设我们现在在做一个转账功能，我们抽象出一个Account(账户)的Entity。这个Account的有转出，转入的行为。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Account</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">transferInto</span><span class="hljs-params">(Money money)</span>&#123;<br>        <br>    &#125;<br>    <br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">transferOut</span><span class="hljs-params">(Money money)</span>&#123;<br>        <br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>我们做一个转账功能，就是贷方账户转出钱，借方账户转入钱。然而，我们如果把账户中加入一个转账的功能，那么，借方账户与贷户账户行业会发生互相依赖的情况。<br>像这样，把一个由多个实体行为组成社交类行为，我们可以把它放到一个Service中，这里的Service与Entity一样，一般都是代表着现实世界中具体的含义。<br>比如，我们定义一个转账的服务</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">FundsTransferService</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">transfer</span><span class="hljs-params">(Account creditor, Account debtor, Money money)</span>&#123;<br>        creditor.transferOut(money);<br>        debtor.transferInto(money);<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>另外，有一些全局性的规则发生的时候，我们也会在服务中进行实现，比如每个月的27号，银行通常会进行系统维护，这时候不允许转账。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">FundsTransferService</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">transfer</span><span class="hljs-params">(Account creditor, Account debtor, Money money)</span>&#123;<br>        <span class="hljs-keyword">if</span>(DateUtils.getDays(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>()) == <span class="hljs-number">28</span>)&#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(<span class="hljs-string">&quot;系统在维护中,转账失败!&quot;</span>);<br>        &#125;<br>        creditor.transferOut(money);<br>        debtor.transferInto(money);<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>好了，现在我们已经讲完了DDD的主要知识点，关于Factory、Repository等概念，大家可以看一下Eric的领域驱动设计，我也会在下一文DDD的具体实现案例中来进行说明。</p>
+<h2 id="EDA"><a href="#EDA" class="headerlink" title="EDA"></a>EDA</h2><p>EDA(事件驱动架构)主要是由事件以核心，通过事件的发送、订阅来运行系统。<br>我认为事件是一个标准，当我们可以在一个系统中建立一个标准并且可以接受最终一致性的时候，我们通常可以认为这个系统与其它相关的系统是解耦的。<br><img src="/img/content/eda/eda.png" srcset="/img/loading.gif" lazyload alt="事件驱动架构"><br>光从作法来看，EDA与传统架构的区别主要在于将传统架构处理数据库变更或者DDD中处理模型的变更转化成一个个标准的事件，至于事件的消费、事件的追溯则有具体的服务完成。<br>关于EDA更深一步的说明可以看笔者的上一篇文章【<a href="http://www.3world.top/2022/11/17/CQRS%E4%B8%8EEvent%20Sourcing/">CQRS与Event Sourcing</a>】</p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%9E%B6%E6%9E%84/" class="category-chain-item">架构</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/EDA/">#EDA</a>
+      
+        <a href="/tags/Event-Sourcing/">#Event Sourcing</a>
+      
+        <a href="/tags/DDD/">#DDD</a>
+      
+        <a href="/tags/%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8/">#事件驱动</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>DDD与EDA-核心逻辑提炼方法论</div>
+      <div>http://www.3world.top/2022/11/28/DDD与EDA-核心逻辑提炼方法论/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>胖子笑西风</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年11月28日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/01/29/%E5%A4%9A%E7%BA%A7%E5%88%86%E6%B5%81/" title="多级分流">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">多级分流</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/11/17/CQRS%E4%B8%8EEvent%20Sourcing/" title="CQRS与Event Sourcing">
+                        <span class="hidden-mobile">CQRS与Event Sourcing</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div class="disqus" style="width:100%">
+    <div id="disqus_thread"></div>
+    
+      <script type="text/javascript">
+        var disqus_config = function() {
+          this.page.url = 'http://www.3world.top/2022/11/28/DDD%E4%B8%8EEDA-%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91%E6%8F%90%E7%82%BC%E6%96%B9%E6%B3%95%E8%AE%BA/';
+          this.page.identifier = '/2022/11/28/DDD%E4%B8%8EEDA-%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91%E6%8F%90%E7%82%BC%E6%96%B9%E6%B3%95%E8%AE%BA/';
+        };
+        Fluid.utils.loadComments('#disqus_thread', function() {
+          var d = document, s = d.createElement('script');
+          s.src = '//' + 'fluid' + '.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', new Date());
+          (d.head || d.body).appendChild(s);
+        });
+      </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+  </div>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?ce2e798b1c31297dd7ece0242cac0a2b";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+    <!-- Google gtag.js -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript('https://www.googletagmanager.com/gtag/js?id=G-MBPFGDQNG5', function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-MBPFGDQNG5');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
