@@ -13,30 +13,30 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
   <meta name="theme-color" content="#2f4154">
-  <meta name="author" content="胖子笑西风">
+  <meta name="author" content="白玉京">
   <meta name="keywords" content="">
   
     <meta name="description" content="架构架构这一词，英文单词为Architecture。Architecture在计算机体系中解释为架构，在建筑领域中理解为结构。因此，理解计算机的架构，我们可以从建筑学中的结构出发。上图是一张房子的结构图。从图中我们可以看到，房子的结构主要是说明这个房子有什么东西，这些东西应该在什么位置，怎么样整合起来整体更好看，更耐用。同样，我认为架构跟结构是一个道理的。网上大家对架构是这么定义的：架构是“以组件">
 <meta property="og:type" content="article">
 <meta property="og:title" content="DDD与应用架构">
-<meta property="og:url" content="http://www.3world.top/2022/11/17/DDD%E4%B8%8E%E5%BA%94%E7%94%A8%E6%9E%B6%E6%9E%84/index.html">
-<meta property="og:site_name" content="胖子笑西风">
+<meta property="og:url" content="http://byj.zzmd.tech/2022/11/17/DDD%E4%B8%8E%E5%BA%94%E7%94%A8%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:site_name" content="白玉京">
 <meta property="og:description" content="架构架构这一词，英文单词为Architecture。Architecture在计算机体系中解释为架构，在建筑领域中理解为结构。因此，理解计算机的架构，我们可以从建筑学中的结构出发。上图是一张房子的结构图。从图中我们可以看到，房子的结构主要是说明这个房子有什么东西，这些东西应该在什么位置，怎么样整合起来整体更好看，更耐用。同样，我认为架构跟结构是一个道理的。网上大家对架构是这么定义的：架构是“以组件">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://www.3world.top/img/content/CleanArchetecture.png">
+<meta property="og:image" content="http://byj.zzmd.tech/img/content/CleanArchetecture.png">
 <meta property="article:published_time" content="2022-11-17T02:25:00.000Z">
 <meta property="article:modified_time" content="2023-01-31T05:47:56.000Z">
-<meta property="article:author" content="胖子笑西风">
+<meta property="article:author" content="白玉京">
 <meta property="article:tag" content="DDD">
 <meta property="article:tag" content="六边形架构">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://www.3world.top/img/content/CleanArchetecture.png">
+<meta name="twitter:image" content="http://byj.zzmd.tech/img/content/CleanArchetecture.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>DDD与应用架构 - 胖子笑西风</title>
+  <title>DDD与应用架构 - 白玉京</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -74,7 +74,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"www.3world.top","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"ce2e798b1c31297dd7ece0242cac0a2b","google":null,"gtag":"G-MBPFGDQNG5","tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"byj.zzmd.tech","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"ce2e798b1c31297dd7ece0242cac0a2b","google":null,"gtag":"G-MBPFGDQNG5","tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -98,7 +98,7 @@
   <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand" href="/">
-      <strong>胖子笑西风</strong>
+      <strong>白玉京</strong>
     </a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
@@ -419,13 +419,13 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>DDD与应用架构</div>
-      <div>http://www.3world.top/2022/11/17/DDD与应用架构/</div>
+      <div>http://byj.zzmd.tech/2022/11/17/DDD与应用架构/</div>
     </div>
     <div class="license-meta">
       
         <div class="license-meta-item">
           <div>作者</div>
-          <div>胖子笑西风</div>
+          <div>白玉京</div>
         </div>
       
       
@@ -484,7 +484,7 @@
     
       <script type="text/javascript">
         var disqus_config = function() {
-          this.page.url = 'http://www.3world.top/2022/11/17/DDD%E4%B8%8E%E5%BA%94%E7%94%A8%E6%9E%B6%E6%9E%84/';
+          this.page.url = 'http://byj.zzmd.tech/2022/11/17/DDD%E4%B8%8E%E5%BA%94%E7%94%A8%E6%9E%B6%E6%9E%84/';
           this.page.identifier = '/2022/11/17/DDD%E4%B8%8E%E5%BA%94%E7%94%A8%E6%9E%B6%E6%9E%84/';
         };
         Fluid.utils.loadComments('#disqus_thread', function() {
