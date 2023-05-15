@@ -51,11 +51,11 @@
     
     <tags>
       
+      <tag>DDD</tag>
+      
       <tag>EDA</tag>
       
       <tag>Event Sourcing</tag>
-      
-      <tag>DDD</tag>
       
       <tag>事件驱动</tag>
       
@@ -82,9 +82,9 @@
     
     <tags>
       
-      <tag>Event Sourcing</tag>
-      
       <tag>DDD</tag>
+      
+      <tag>Event Sourcing</tag>
       
       <tag>事件驱动</tag>
       
