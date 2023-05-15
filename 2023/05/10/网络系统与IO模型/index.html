@@ -1,0 +1,939 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/zzmd.png">
+  <link rel="icon" href="/img/zzmd.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="白玉京">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="这篇网络系统与IO模型的介绍，主要是基于Linux系统。讲解高并发情况下系统如何处理请求。还是照旧，我们从一个网络请求开始。 连接的建立socket1234567891011121314public class Server &amp;#123;    public static void main(String[] args) throws IOException &amp;#123;        Socke">
+<meta property="og:type" content="article">
+<meta property="og:title" content="网络系统与IO模型">
+<meta property="og:url" content="http://byj.zzmd.tech/2023/05/10/%E7%BD%91%E7%BB%9C%E7%B3%BB%E7%BB%9F%E4%B8%8EIO%E6%A8%A1%E5%9E%8B/index.html">
+<meta property="og:site_name" content="白玉京">
+<meta property="og:description" content="这篇网络系统与IO模型的介绍，主要是基于Linux系统。讲解高并发情况下系统如何处理请求。还是照旧，我们从一个网络请求开始。 连接的建立socket1234567891011121314public class Server &amp;#123;    public static void main(String[] args) throws IOException &amp;#123;        Socke">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://byj.zzmd.tech/img/content/netio/intelligence.jpg">
+<meta property="article:published_time" content="2023-05-10T07:00:00.000Z">
+<meta property="article:modified_time" content="2023-05-10T07:33:20.903Z">
+<meta property="article:author" content="白玉京">
+<meta property="article:tag" content="同步">
+<meta property="article:tag" content="异步">
+<meta property="article:tag" content="阻塞">
+<meta property="article:tag" content="非阻塞">
+<meta property="article:tag" content="网络">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://byj.zzmd.tech/img/content/netio/intelligence.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>网络系统与IO模型 - 白玉京</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"byj.zzmd.tech","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"ce2e798b1c31297dd7ece0242cac0a2b","google":null,"gtag":"G-MBPFGDQNG5","tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>白玉京</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/content/netio/network.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="网络系统与IO模型"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-05-10 15:00" pubdate>
+          2023年5月10日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          16k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          135 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">网络系统与IO模型</h1>
+            
+            <div class="markdown-body">
+              
+              <p>这篇网络系统与IO模型的介绍，主要是基于Linux系统。讲解高并发情况下系统如何处理请求。还是照旧，我们从一个网络请求开始。</p>
+<h1 id="连接的建立"><a href="#连接的建立" class="headerlink" title="连接的建立"></a>连接的建立</h1><h2 id="socket"><a href="#socket" class="headerlink" title="socket"></a>socket</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Server</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br>        <span class="hljs-type">SocketAddress</span> <span class="hljs-variable">address</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">InetSocketAddress</span>(<span class="hljs-number">9989</span>);<br>        <span class="hljs-type">ServerSocket</span> <span class="hljs-variable">serverSocket</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ServerSocket</span>();<br>        serverSocket.bind(address);<br>        <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>)&#123;<br>            <span class="hljs-type">Socket</span> <span class="hljs-variable">socket</span> <span class="hljs-operator">=</span> serverSocket.accept();<br>            <span class="hljs-type">BufferedReader</span> <span class="hljs-variable">reader</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BufferedReader</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">InputStreamReader</span>(socket.getInputStream()));<br>            System.out.println(reader.readLine());<br>        &#125;<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>这时我们刚学习Java网络编程时都会练习到的Java Server写法。同时配套的还有一个Client.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Client</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br>        <span class="hljs-type">Socket</span> <span class="hljs-variable">socket</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Socket</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>,<span class="hljs-number">9989</span>);<br>        <span class="hljs-type">BufferedWriter</span> <span class="hljs-variable">writer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BufferedWriter</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">OutputStreamWriter</span>(socket.getOutputStream()));<br>        writer.write(<span class="hljs-string">&quot;Hello,World!&quot;</span>);<br>        writer.close();<br>        socket.close();<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>我们看到，服务器端与客户端是通过socket来进行通信的。双方要进行网络通信前，各自得创建一个 Socket，这相当于客户端和服务器都开了一个“口子”，双方读取和发送数据的时候，都通过这个“口子”。像弄了一根网线，一头插在客户端，一头插在服务端，然后进行通信。<br>服务器的程序要先跑起来，然后等待客户端的连接和数据，我们先来看看服务端的 Socket 编程过程是怎样的。<br>服务端首先调用 socket() 函数，创建网络协议为 IPv4，以及传输协议为 TCP 的 Socket ，接着调用 bind() 函数，给这个 Socket 绑定一个 IP 地址和端口，绑定这两个的目的是什么？</p>
+<ul>
+<li>绑定端口的目的：当内核收到 TCP 报文，通过 TCP 头里面的端口号，来找到我们的应用程序，然后把数据传递给我们。</li>
+<li>绑定 IP 地址的目的：一台机器是可以有多个网卡的，每个网卡都有对应的 IP 地址，当绑定一个网卡时，内核在收到该网卡上的包，才会发给我们；</li>
+</ul>
+<p>绑定完 IP 地址和端口后，就可以调用 listen() 函数进行监听，此时对应 TCP 状态图中的 listen，如果我们要判定服务器中一个网络程序有没有启动，可以通过 netstat 命令查看对应的端口号是否有被监听。<br>服务端进入了监听状态后，通过调用 accept() 函数，来从内核获取客户端的连接，如果没有客户端连接，则会阻塞等待客户端连接的到来。<br>那客户端是怎么发起连接的呢？客户端在创建好 Socket 后，调用 connect() 函数发起连接，该函数的参数要指明服务端的 IP 地址和端口号，然后万众期待的 TCP 三次握手就开始了。</p>
+<h2 id="TCP连接"><a href="#TCP连接" class="headerlink" title="TCP连接"></a>TCP连接</h2><h3 id="三次握手"><a href="#三次握手" class="headerlink" title="三次握手"></a>三次握手</h3><p><img src="/img/content/netio/TCP3.png" srcset="/img/loading.gif" lazyload alt="TCP三次握手.png">)<br>TCP 三次握手，其实就是建立一个 TCP 连接，客户端与服务器交互需要 3 个数据包。握手的主要作用就是为了确认双方的接收和发送能力是否正常，初始序列号，交换窗口大小以及 MSS 等信息。</p>
+<ul>
+<li><p>第一次握手：客户端发送 SYN 报文，并进入 SYN_SENT 状态，等待服务器的确认；</p>
+</li>
+<li><p>第二次握手：服务器收到 SYN 报文，需要给客户端发送 ACK 确认报文，同时服务器也要向客户端发送一个 SYN 报文，所以也就是向客户端发送 SYN + ACK 报文，此时服务器进入 SYN_RCVD 状态；</p>
+</li>
+<li><p>第三次握手：客户端收到 SYN + ACK 报文，向服务器发送确认包，客户端进入 ESTABLISHED 状态。待服务器收到客户端发送的 ACK 包也会进入 ESTABLISHED 状态，完成三次握手。</p>
+<h2 id="半连接-全连接队列"><a href="#半连接-全连接队列" class="headerlink" title="半连接/全连接队列"></a>半连接/全连接队列</h2><p>在 TCP 连接的过程中，服务器的内核实际上为每个 Socket 维护了两个队列：</p>
+</li>
+<li><p>一个是「还没完全建立」连接的队列，称为 TCP 半连接队列，这个队列都是没有完成三次握手的连接，此时服务端处于 syn_rcvd 的状态；</p>
+</li>
+<li><p>一个是「已经建立」连接的队列，称为 TCP 全连接队列，这个队列都是完成了三次握手的连接，此时服务端处于 established 状态；</p>
+</li>
+</ul>
+<p>当 TCP 全连接队列不为空后，服务端的 accept() 函数，就会从内核中的 TCP 全连接队列里拿出一个已经完成连接的 Socket 返回应用程序，后续数据传输都用这个 Socket。<br>注意，监听的 Socket 和真正用来传数据的 Socket 是两个：</p>
+<ul>
+<li>一个叫作监听 Socket；</li>
+<li>一个叫作已连接 Socket；</li>
+</ul>
+<p>连接建立后，客户端和服务端就开始相互传输数据了，双方都可以通过 read() 和 write() 函数来读写数据。</p>
+<h1 id="用户空间与内核空间"><a href="#用户空间与内核空间" class="headerlink" title="用户空间与内核空间"></a>用户空间与内核空间</h1><p>上面说到，我们建立了socket连接，通过一个已连接的socket来进行客户端与服务端之间的通信。我们再往底层追踪，计算机是靠网卡来在网络上传输数据的，那么我们从网卡接收数据开始，来描述下socket连接是如何传输数据的。</p>
+<h2 id="网卡数据传输"><a href="#网卡数据传输" class="headerlink" title="网卡数据传输"></a>网卡数据传输</h2><p><img src="/img/content/netio/%E7%BD%91%E5%8D%A1%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE.jpg" srcset="/img/loading.gif" lazyload alt="网卡接收数据.jpg"></p>
+<p>上图展示了网卡接收数据的过程。</p>
+<ul>
+<li>在 ① 阶段，网卡收到网线传来的数据；</li>
+<li>经过 ② 阶段的硬件电路的传输；</li>
+<li>最终 ③ 阶段将数据写入到内存中的某个地址上。</li>
+</ul>
+<p>其中第3阶段，将数据写入内存中，其中涉及到了DMA技术。我们来详细说明下。</p>
+<h2 id="DMA"><a href="#DMA" class="headerlink" title="DMA"></a>DMA</h2><h3 id="为什么要有-DMA-技术"><a href="#为什么要有-DMA-技术" class="headerlink" title="为什么要有 DMA 技术?"></a>为什么要有 DMA 技术?</h3><p>在没有 DMA 技术前，I/O 的过程是这样的：</p>
+<ul>
+<li>CPU 发出对应的指令给磁盘控制器，然后返回；</li>
+<li>磁盘控制器收到指令后，于是就开始准备数据，会把数据放入到磁盘控制器的内部缓冲区中，然后产生一个中断；</li>
+<li>CPU 收到中断信号后，停下手头的工作，接着把磁盘控制器的缓冲区的数据一次一个字节地读进自己的寄存器，然后再把寄存器里的数据写入到内存，而在数据传输的期间 CPU 是无法执行其他任务的。</li>
+</ul>
+<p>下图说明没有DMA时候I/O全过程<br><img src="/img/content/netio/CPUIO%E8%BF%87%E7%A8%8B.png" srcset="/img/loading.gif" lazyload alt="CPUIO过程.png"><br>可以看到，整个数据的传输过程，都要需要 CPU 亲自参与搬运数据的过程，而且这个过程，CPU 是不能做其他事情的。<br>简单的搬运几个字符数据那没问题，但是如果我们用千兆网卡或者硬盘传输大量数据的时候，都用 CPU 来搬运的话，肯定忙不过来。<br>计算机科学家们发现了事情的严重性后，于是就发明了 DMA 技术，也就是直接内存访问（Direct Memory Access） 技术。</p>
+<h3 id="什么是DMA"><a href="#什么是DMA" class="headerlink" title="什么是DMA"></a>什么是DMA</h3><p>什么是 DMA 技术？简单理解就是，在进行 I/O 设备和内存的数据传输的时候，数据搬运的工作全部交给 DMA 控制器，而 CPU 不再参与任何与数据搬运相关的事情，这样 CPU 就可以去处理别的事务。<br>那使用 DMA 控制器进行数据传输的过程究竟是什么样的呢？下面我们来具体看看。<br>![DMA I_O 过程.webp](/img/content/netio/DMA I_O 过程.webp)<br>具体过程：</p>
+<ul>
+<li>用户进程调用 read 方法，向操作系统发出 I/O 请求，请求读取数据到自己的内存缓冲区中，进程进入阻塞状态；</li>
+<li>操作系统收到请求后，进一步将 I/O 请求发送 DMA，然后让 CPU 执行其他任务；</li>
+<li>DMA 进一步将 I/O 请求发送给磁盘；</li>
+<li>磁盘收到 DMA 的 I/O 请求，把数据从磁盘读取到磁盘控制器的缓冲区中，当磁盘控制器的缓冲区被读满后，向 DMA 发起中断信号，告知自己缓冲区已满；</li>
+<li>DMA 收到磁盘的信号，将磁盘控制器缓冲区中的数据拷贝到内核缓冲区中，此时不占用 CPU，CPU 可以执行其他任务；</li>
+<li>当 DMA 读取了足够多的数据，就会发送中断信号给 CPU；</li>
+<li>CPU 收到 DMA 的信号，知道数据已经准备好，于是将数据从内核拷贝到用户空间，系统调用返回；</li>
+</ul>
+<p>可以看到， CPU 不再参与「将数据从磁盘控制器缓冲区搬运到内核空间」的工作，这部分工作全程由 DMA 完成。但是 CPU 在这个过程中也是必不可少的，因为传输什么数据，从哪里传输到哪里，都需要 CPU 来告诉 DMA 控制器。<br>早期 DMA 只存在在主板上，如今由于 I/O 设备越来越多，数据传输的需求也不尽相同，所以每个 I/O 设备里面都有自己的 DMA 控制器。</p>
+<h2 id="用户空间与内核空间-1"><a href="#用户空间与内核空间-1" class="headerlink" title="用户空间与内核空间"></a>用户空间与内核空间</h2><p>从DMA过程中我们可以看到，数据是先拷贝到内核空间，再拷贝到用户空间的。那什么是内核空间与用户空间呢?<br>早期操作系统是不区分内核空间和用户空间的，但是应用程序能访问任意内存空间，如果程序不稳定常常把系统搞崩溃，比如清除操作系统的内存数据。后来觉得让应用程序随便访问内存太危险了，就按照CPU 指令的重要程度对指令进行了分级，指令分为四个级别：Ring0~Ring3 (和电影分级有点像)，linux 只使用了 Ring0 和 Ring3 两个运行级别，进程运行在 Ring3 级别时运行在用户态，指令只访问用户空间，而运行在 Ring0 级别时被称为运行在内核态，可以访问任意内存空间。<br>我们知道操作系统采用的是虚拟地址空间，以32位操作系统举例，它的寻址空间为4G(2的32次方)，这里解释二个概念:</p>
+<ol>
+<li>寻址: 是指操作系统能找到的地址范围，32位指的是地址总线的位数，你就想象32位的二进制数，每一位可以是0，可以是1，是不是有2的32次方种可能，2^32次方就是可以访问到的最大内存空间，也就是4G。</li>
+<li>虚拟地址空间：为什么叫虚拟，因为我们内存一共就4G，但操作系统为每一个进程都分配了4G的内存空间，这个内存空间实际是虚拟的，虚拟内存到真实内存有个映射关系。例如X86 cpu采用的段页式地址映射模型。</li>
+</ol>
+<p>操作系统将这4G可访问的内存空间分为二部分，一部分是内核空间，一部分是用户空间。<br>内核空间是操作系统内核访问的区域，独立于普通的应用程序，是受保护的内存空间。<br>用户空间是普通应用程序可访问的内存区域。<br>以linux操作系统为例，将最高的1G字节（从虚拟地址0xC0000000到0xFFFFFFFF），供内核使用，称为内核空间，而将较低的3G字节（从虚拟地址0x00000000到0xBFFFFFFF），供各个进程使用，称为用户空间。</p>
+<h1 id="IO模型"><a href="#IO模型" class="headerlink" title="IO模型"></a>IO模型</h1><p>从上文我们知道，一个请求过来，建立一个全连接的socket。服务端加载数据，先将数据加载到内核空间，再由内核拷贝到用户空间，最后通过socket返回。服务端加载数据过程如下。</p>
+<ul>
+<li>JVM向kernel发起system call read()</li>
+<li>操作系统发生上下文切换，由用户态(User mode)切换到内核态(Kernel mode)，把数据读取到Kernel space buffer</li>
+<li>Kernel把数据从Kernel space复制到User space，同时由内核态转为用户态。</li>
+</ul>
+<p>从上面可以看出一个I/O操作，<strong>通常</strong>而言会发生下面的事</p>
+<ol>
+<li>两次上下文切换(User mode 和 Kernel mode之间转换)</li>
+<li>数据在Kernel space 和 User space之间复制</li>
+</ol>
+<p><img src="/img/content/netio/IO%E8%BF%87%E7%A8%8B.jpg" srcset="/img/loading.gif" lazyload alt="IO过程.png"></p>
+<h2 id="支持更多的请求"><a href="#支持更多的请求" class="headerlink" title="支持更多的请求"></a>支持更多的请求</h2><p>并发 1 万请求，也就是经典的 C10K 问题 ，C 是 Client 单词首字母缩写，C10K 就是单机同时处理 1 万个请求的问题。<br>那如果服务器的内存只有 2 GB，网卡是千兆的，能支持并发 1 万请求吗？<br>相信你知道 TCP 连接是由四元组唯一确认的，这个四元组就是：本机IP, 本机端口, 对端IP, 对端端口。<br>服务器作为服务方，通常会在本地固定监听一个端口，等待客户端的连接。因此服务器的本地 IP 和端口是固定的，于是对于服务端 TCP 连接的四元组只有对端 IP 和端口是会变化的，所以最大 TCP 连接数 = 客户端 IP 数×客户端端口数。<br>对于 IPv4，客户端的 IP 数最多为 2 的 32 次方，客户端的端口数最多为 2 的 16 次方，也就是服务端单机最大 TCP 连接数约为 2 的 48 次方。<br>这个理论值相当“丰满”，但是服务器肯定承载不了那么大的连接数，主要会受两个方面的限制：</p>
+<ul>
+<li>文件描述符，Socket 实际上是一个文件，也就会对应一个文件描述符。在 Linux 下，单个进程打开的文件描述符数是有限制的，没有经过修改的值一般都是 1024，不过我们可以通过 ulimit 增大文件描述符的数目；</li>
+<li>系统内存，每个 TCP 连接在内核中都有对应的数据结构，意味着每个连接都是会占用一定内存的；</li>
+</ul>
+<p>从硬件资源角度看，对于 2GB 内存千兆网卡的服务器，如果每个请求处理占用不到 200KB 的内存和 100Kbit 的网络带宽就可以满足并发 1 万个请求。<br>前面提到的 TCP Socket 调用流程是最简单、最基本的，它基本只能一对一通信，因为使用的是同步阻塞的方式，当服务端在还没处理完一个客户端的网络 I/O 时，或者 读写操作发生阻塞时，其他客户端是无法与服务端连接的。<br>其中Linux中的IO模型为 blocking I/O</p>
+<h2 id="Blocking-I-O"><a href="#Blocking-I-O" class="headerlink" title="Blocking I/O"></a>Blocking I/O</h2><p><img src="/img/content/netio/bio.png" srcset="/img/loading.gif" lazyload alt="bio.png"><br>上图是blocking I/O发起system call recvfrom()时，进程将一直阻塞等待另一端Socket的数据到来。在这种I/O模型下，我们不得不为每一个Socket都分配一个线程，这会造成很大的资源浪费。<br>Blocking I/O优缺点都非常明显。优点是简单易用，对于本地I/O而言性能很高。缺点是处理网络I/O时，造成进程阻塞空等，浪费资源。<br>注: read() 和 recvfrom()的区别是，前者从文件系统读取数据，后者从socket接收数据。<br>我们上述的例子就属于Blocking I/O，Java网络编程中叫作BIO.我们模拟IO的阻塞过程</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BlockInputStream</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">FilterInputStream</span> &#123;<br><br>    <span class="hljs-keyword">protected</span> <span class="hljs-title function_">BlockInputStream</span><span class="hljs-params">(InputStream in)</span> &#123;<br>        <span class="hljs-built_in">super</span>(in);<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">read</span><span class="hljs-params">(<span class="hljs-type">byte</span>[] b, <span class="hljs-type">int</span> off, <span class="hljs-type">int</span> len)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br>        <span class="hljs-keyword">try</span> &#123;<br>            Thread.sleep(<span class="hljs-number">10000</span>);<br>            System.out.println(<span class="hljs-string">&quot;正在从网络请求数据!等待10s&quot;</span>);<br>        &#125;<span class="hljs-keyword">catch</span> (Exception e)&#123;<br>            e.printStackTrace();<br>        &#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-built_in">super</span>.read(b, off, len);<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Server</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br>        <span class="hljs-type">SocketAddress</span> <span class="hljs-variable">address</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">InetSocketAddress</span>(<span class="hljs-number">9989</span>);<br>        <span class="hljs-type">ServerSocket</span> <span class="hljs-variable">serverSocket</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ServerSocket</span>();<br>        serverSocket.bind(address);<br>        <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>)&#123;<br>            <span class="hljs-type">Socket</span> <span class="hljs-variable">socket</span> <span class="hljs-operator">=</span> serverSocket.accept();<br>            <span class="hljs-type">BufferedReader</span> <span class="hljs-variable">reader</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BufferedReader</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">InputStreamReader</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">BlockInputStream</span>(socket.getInputStream())));<br>            System.out.println(reader.readLine());<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Client</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">2</span>; i++) &#123;<br>            <span class="hljs-type">Socket</span> <span class="hljs-variable">socket</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Socket</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>, <span class="hljs-number">9989</span>);<br>            <span class="hljs-keyword">if</span> (socket.isConnected()) &#123;<br>                System.out.println(<span class="hljs-string">&quot;请求:&quot;</span>+i+<span class="hljs-string">&quot;连接成功!&quot;</span>);<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                System.out.println(<span class="hljs-string">&quot;请求:&quot;</span>+i+<span class="hljs-string">&quot;连接不成功!&quot;</span>);<br>            &#125;<br>            <span class="hljs-type">BufferedWriter</span> <span class="hljs-variable">writer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BufferedWriter</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">OutputStreamWriter</span>(socket.getOutputStream()));<br>            writer.write(<span class="hljs-string">&quot;请求:&quot;</span>+i+<span class="hljs-string">&quot;正在说:Hello,World!&quot;</span>);<br>            writer.close();<br>            socket.close();<br>        &#125;<br><br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>输出如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//Server</span><br>正在从网络请求数据!等待10s<br>正在从网络请求数据!等待10s<br>请求:<span class="hljs-number">0</span>正在说:Hello,World!<br>正在从网络请求数据!等待10s<br>正在从网络请求数据!等待10s<br>请求:<span class="hljs-number">1</span>正在说:Hello,World!<br><span class="hljs-comment">//Client</span><br>请求:<span class="hljs-number">0</span>连接成功!<br>请求:<span class="hljs-number">1</span>连接成功!<br></code></pre></td></tr></table></figure>
+<p>可以看到，当IO阻塞的时候，请求并大量阻塞住，服务端只能一个一个进行处理。<br>这样的IO模型显然无法满足高并发的需求。</p>
+<h3 id="多线程模型"><a href="#多线程模型" class="headerlink" title="多线程模型"></a>多线程模型</h3><p>线程是运行在进程中的一个“逻辑流”，单进程中可以运行多个线程，同进程里的线程可以共享进程的部分资源，比如文件描述符列表、进程空间、代码、全局数据、堆、共享库等，这些共享些资源在上下文切换时不需要切换，而只需要切换线程的私有数据、寄存器等不共享的数据，因此同一个进程下的线程上下文切换的开销要比进程小得多。<br>当服务器与客户端 TCP 完成连接后，通过 pthread_create() 函数创建线程，然后将「已连接 Socket」的文件描述符传递给线程函数，接着在线程里和客户端进行通信，从而达到并发处理的目的。<br>如果每来一个连接就创建一个线程，线程运行完后，还得操作系统还得销毁线程，虽说线程切换的上写文开销不大，但是如果频繁创建和销毁线程，系统开销也是不小的。<br>那么，我们可以使用线程池的方式来避免线程的频繁创建和销毁，所谓的线程池，就是提前创建若干个线程，这样当由新连接建立时，将这个已连接的 Socket 放入到一个队列里，然后线程池里的线程负责从队列中取出「已连接 Socket 」进行处理。<br><img src="/img/content/netio/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B.webp" srcset="/img/loading.gif" lazyload alt="多线程模型.webp"><br>需要注意的是，这个队列是全局的，每个线程都会操作，为了避免多线程竞争，线程在操作这个队列前要加锁。<br>上面基于进程或者线程模型的，其实还是有问题的。新到来一个 TCP 连接，就需要分配一个进程或者线程，那么如果要达到 C10K，意味着要一台机器维护 1 万个连接，相当于要维护 1 万个进程/线程，操作系统就算死扛也是扛不住的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Server</span> &#123;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br>        <span class="hljs-type">SocketAddress</span> <span class="hljs-variable">address</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">InetSocketAddress</span>(<span class="hljs-number">9989</span>);<br>        <span class="hljs-type">ServerSocket</span> <span class="hljs-variable">serverSocket</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ServerSocket</span>();<br>        serverSocket.bind(address);<br>        <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>)&#123;<br>            <span class="hljs-type">Socket</span> <span class="hljs-variable">socket</span> <span class="hljs-operator">=</span> serverSocket.accept();<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">SocketHandler</span>(socket)).start();<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SocketHandler</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Runnable</span>&#123;<br><br>    Socket socket;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">SocketHandler</span><span class="hljs-params">(Socket socket)</span> &#123;<br>        <span class="hljs-built_in">this</span>.socket = socket;<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">try</span>&#123;<br>            <span class="hljs-type">BufferedReader</span> <span class="hljs-variable">reader</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BufferedReader</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">InputStreamReader</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">BlockInputStream</span>(<span class="hljs-built_in">this</span>.socket.getInputStream())));<br>            System.out.println(reader.readLine());<br>        &#125;<span class="hljs-keyword">catch</span> (Exception e)&#123;<br>            e.printStackTrace();<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="Non-Blocking-I-O"><a href="#Non-Blocking-I-O" class="headerlink" title="Non-Blocking I/O"></a>Non-Blocking I/O</h2><p><img src="/img/content/netio/noblockingIO.png" srcset="/img/loading.gif" lazyload alt="noblockingIO.png"><br>非阻塞I/O很容易理解。相对于阻塞I/O在那傻傻的等待，非阻塞I/O隔一段时间就发起system call看数据是否就绪(ready)。<br>如果数据就绪，就从kernel space复制到user space，操作数据; 如果还没就绪，kernel会立即返回EWOULDBLOCK这个错误。<br>可能细心的朋友会留意到，这里同样发起system call recvfrom，凭什么在blocking I/O会阻塞，而在这里kernel的数据还没就绪就直接返回EWOULDBLOCK呢？我们看看recvfrom函数定义:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">ssize_t</span> <span class="hljs-title function_">recvfrom</span><span class="hljs-params">(</span><br><span class="hljs-params">    <span class="hljs-type">int</span> sockfd, <span class="hljs-type">void</span> *buf, <span class="hljs-type">size_t</span> len, <span class="hljs-type">int</span> flags,</span><br><span class="hljs-params">    <span class="hljs-keyword">struct</span> sockaddr *src_addr, <span class="hljs-type">socklen_t</span> *addrlen</span><br><span class="hljs-params">)</span>;<br></code></pre></td></tr></table></figure>
+<p>这里能看到recvfrom有个参数叫flags，默认情况下阻塞。可以设置flag为非阻塞让kernel在数据未就绪时直接返回。详细见<a target="_blank" rel="noopener" href="https://linux.die.net/man/2/recvfrom">recvfrom</a>。<br>Non-blocking I/O的优势在于，进程发起I/O操作时，不会因为数据还没就绪而阻塞，这就是”非阻塞”的含义。<br>但这种I/O模型缺陷过于明显。在本地I/O，kernel读取数据很快，这种模式下多了至少一次system call，而system call是比较消耗cpu的操作。对于Socket而言，大量的system call更是这种模型显得很鸡肋。<br>Java IO中没有直接实现Non-blocking I/O的方法，可以使用 serverSocket.setSoTimeout(100)来进行模拟。</p>
+<h2 id="I-O-Multiplexing"><a href="#I-O-Multiplexing" class="headerlink" title="I/O Multiplexing"></a>I/O Multiplexing</h2><p><img src="/img/content/netio/IO%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8.png" srcset="/img/loading.gif" lazyload alt="IO多路复用.png"><br>I/O Multiplexing又叫IO多路复用，这是借用了集成电路多路复用中的概念。它优化了非阻塞I/O大量发起system call的问题。<br>上面介绍的I/O模型都是直接发起I/O操作，而I/O Multiplexing首先向kernel发起system call，传入file descriptor和感兴趣的事件(readable、writable等)让kernel监测，当其中一个或多个fd数据就绪，就会返回结果。程序再发起真正的I/O操作recvfrom读取数据。<br>在linux中，有3种system call可以让内核监测file descriptors，分别是select、poll、epoll。<br>我们先看看内核是怎么监测file descriptors的。</p>
+<h3 id="如何通知Socket已准备好"><a href="#如何通知Socket已准备好" class="headerlink" title="如何通知Socket已准备好"></a>如何通知Socket已准备好</h3><p>上面我们说到当网卡接收到数据时，由DMA来存入到内存中。那么数据存入内存中后，怎么通知到socket说数据已准备好了呢。我们来进一步看。<br><img src="/img/content/netio/%E7%BD%91%E7%BB%9C%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86.png" srcset="/img/loading.gif" lazyload alt="网络数据处理.png"><br>首先当数据帧从网线到达网卡上的时候，第一站是网卡的接收队列。网卡在分配给自己的RingBuffer中寻找可用的内存位置，找到后DMA引擎会把数据DMA到网卡之前关联的内存里，这个时候CPU都是无感的。当DMA操作完成以后，网卡会像CPU发起一个硬中断，通知CPU有数据到达。<br>有专门的内核线程 ksoftirqd进行软中断处理。每个 CPU 都会绑定一个 ksoftirqd 内核线程，比如， 2 个 CPU 时，就会有 ksoftirqd/0 和 ksoftirqd/1 这两个内核线程。<br>ksoftirqd内核线程处理软中断的时候，最后会经过网络协议栈处理。发现是 tcp 的包的话就会执行到 tcp_v4_rcv 函数。在 tcp_v4_rcv 中首先根据收到的网络包的 header 里的 source 和 dest 信息来在本机上查询对应的 socket。找到以后，直接进入接收的主体函数 tcp_v4_do_rcv 。tcp_v4_do_rcv进入 tcp_rcv_established 函数中进行处理 ESTABLISH 状态下的包。在 tcp_rcv_established 中通过调用 tcp_queue_rcv 函数中完成了将接收数据放到 socket 的接收队列上。<strong>调用 tcp_queue_rcv 接收完成之后，接着再调用 sk_data_ready 来唤醒在socket上等待的用户进程</strong>。 这又是一个函数指针。 回想上面我们在 创建 socket 流程里执行到的 sock_init_data 函数。它是默认的数据就绪处理函数。<br><img src="/img/content/netio/%E8%BD%AF%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86.png" srcset="/img/loading.gif" lazyload alt="软中断处理.png"><br>在 sock_def_readable 中再一次访问到了 sock-&gt;sk_wq 下的wait。<br>总结一下，当有数据帧进入网卡的时候，DMA将数据拷贝到内存，网卡进行硬中断，CPU处理硬中断，发出软中断。内核线程ksoftirqd处理软中断，这时候socket已经可读了。触发下sock下的sock_def_readable事件，sock_def_readable访问sock-&gt;sk_wq进行处理。sk_wq中存的是fd poll添加回调函数，调用回调函数，可以进行一些处理，也可以唤醒调用线程。</p>
+<h3 id="select"><a href="#select" class="headerlink" title="select"></a>select</h3><p>select 实现多路复用的方式是，将已连接的 Socket 都放到一个文件描述符集合，然后调用 select 函数将文件描述符集合拷贝到内核里，让内核来检查是否有网络事件产生，检查的方式很粗暴，就是通过遍历文件描述符集合的方式，当检查到有事件产生后，将此 Socket 标记为可读或可写， 接着再把整个文件描述符集合拷贝回用户态里，然后用户态还需要再通过遍历的方法找到可读或可写的 Socket，然后再对其处理。<br>所以，对于 select 这种方式，需要进行 2 次「遍历」文件描述符集合，一次是在内核态里，一个次是在用户态里 ，而且还会发生 2 次「拷贝」文件描述符集合，先从用户空间传入内核空间，由内核修改后，再传出到用户空间中。<br><img src="/img/content/netio/select%E8%BF%87%E7%A8%8B.gif" srcset="/img/loading.gif" lazyload alt="select过程.gif"></p>
+<h4 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h4><p>具体参考<a target="_blank" rel="noopener" href="http://shengrang.net/2021/12/19/poll-note/">poll 笔记</a>，流程为</p>
+<ol>
+<li>do_select 初始化时，调用 poll_initwait 初始化 poll_wqueues(poll_table)，把 qproc 设置为 __pollwait</li>
+<li>do_select 遍历 fd 时，调用 (*f_op-&gt;poll)(file, retval ? NULL : wait); ，这会调用 tcp_poll，传入的 wait 是 poll_wqueues(poll_table)</li>
+<li>tcp_poll 里会调用 poll_wait(file, sk-&gt;sk_sleep, wait);</li>
+<li>poll_wait 会调用 poll_table 注册的 qproc，即 __pollwait 函数</li>
+<li>执行 __pollwait 函数</li>
+<li>__pollwait 函数可以先看最后两行，初始化等待队列，把当前进程挂到 entry-&gt;wait 上，再把 entry-&gt;wait 挂到 sk-&gt;sk_sleep 这个等待队列上，结束。</li>
+</ol>
+<p>通过上面如何通知socket已准备好，我们知道数据包到达网卡，会经过内核网络协议栈，最终到达对应的 tcp 连接进行处理（ tcp_v4_rcv -&gt; tcp_v4_do_rcv ）。对于处于 ESTABLISHED 状态的连接，如果产生新的可读分组，那么会调用 sk-&gt;sk_data_ready。而 sock_init_data 初始化 sock 时会把 sk_data_ready 指向的函数设置为 sock_def_readable。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title function_">sock_def_readable</span><span class="hljs-params">(<span class="hljs-keyword">struct</span> sock *sk, <span class="hljs-type">int</span> len)</span><br>&#123;<br>    read_lock(&amp;sk-&gt;sk_callback_lock);<br>    <span class="hljs-keyword">if</span> (sk-&gt;sk_sleep &amp;&amp; waitqueue_active(sk-&gt;sk_sleep))<br>        wake_up_interruptible(sk-&gt;sk_sleep);<br>    sk_wake_async(sk,<span class="hljs-number">1</span>,POLL_IN);<br>    read_unlock(&amp;sk-&gt;sk_callback_lock);<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>代码也很好懂了，如果 sk_sleep 这个等待队列上有阻塞的进程，那么唤醒它（也就是前面在 do_select 遍历完 fd 之后陷入睡眠的进程）。这个进程被调度之后会重新进入 for(;;) 循环，开启新一轮的 fds 遍历，此时它能够在这个 tcp 连接对应的 fd 上 poll 到事件，从而离开循环，返回到用户态。<br>doSelect第一遍先将当前进程/线程挂载到 sk-&gt;sk_sleep上，当DAM将数据拷贝到socket缓冲区后，CPU发出软中断，sock_def_readable唤醒进程/线程,<br>唤醒进程/线程之后，循环继续，进程/线程查当前 tcp 连接的状态，并查看缓冲区的读写状态来确定是否产生了新的可读 / 可写事件，拼到 mask 里返回，do_select 就是读这个返回值来得知是否发生了事件。<br>select()函数的返回值有3种：若返回值大于0，表示已就绪文件描述符的数量，此种情况下某些文件可读写或有错误信息；若返回值等于0，表示等待超时，没有可读写或错误的文件；若返回值-1，表示出错返回，同时errno将被设置。</p>
+<h4 id="select缺陷"><a href="#select缺陷" class="headerlink" title="select缺陷"></a>select缺陷</h4><p>[1] 每次调用select，都需要把被监控的fds集合从用户态空间拷贝到内核态空间，高并发场景下这样的拷贝会使得消耗的资源是很大的。<br>[2] 能监听端口的数量有限，单个进程所能打开的最大连接数有FD_SETSIZE宏定义，其大小是32个整数的大小（在32位的机器上，大小就是3232，同理64位机器上为3264），首先我们打开Linux的fd_set数据结构的源码我们可以看到，就是一个长度为32的long int类型的数组(要注意，windows的源码和Linux的不一样)。每一位可以代表一个文件描述符，所以fd_set最多表示1024个文件描述符！这里为啥是1024个描述符呢？long int长度是32bit，数组长度是32，32*32=1024！当然我们可以对宏FD_SETSIZE进行修改，然后重新编译内核，但是性能可能会受到影响，一般该数和系统内存关系很大，具体数目可以cat /proc/sys/fs/file-max察看。32位机默认1024个，64位默认2048。<br>[3] 被监控的fds集合中，只要有一个有数据可读，整个socket集合就会被遍历一次调用sk的poll函数收集可读事件：由于当初的需求是朴素，仅仅关心是否有数据可读这样一个事件，当事件通知来的时候，由于数据的到来是异步的，我们不知道事件来的时候，有多少个被监控的socket有数据可读了，于是，只能挨个遍历每个socket来收集可读事件</p>
+<h3 id="epoll"><a href="#epoll" class="headerlink" title="epoll"></a>epoll</h3><p>epoll 通过两个方面，很好解决了 select/poll 的问题。<br>第一点，epoll 在内核里使用红黑树来跟踪进程所有待检测的文件描述字，把需要监控的 socket 通过 epoll_ctl() 函数加入内核中的红黑树里，红黑树是个高效的数据结构，增删改一般时间复杂度是 O(logn)。而 select/poll 内核里没有类似 epoll 红黑树这种保存所有待检测的 socket 的数据结构，所以 select/poll 每次操作时都传入整个 socket 集合给内核，而 epoll 因为在内核维护了红黑树，可以保存所有待检测的 socket ，所以只需要传入一个待检测的 socket，减少了内核和用户空间大量的数据拷贝和内存分配。<br>第二点， epoll 使用事件驱动的机制，内核里维护了一个链表来记录就绪事件，当某个 socket 有事件发生时，通过回调函数内核会将其加入到这个就绪事件列表中，当用户调用 epoll_wait() 函数时，只会返回有事件发生的文件描述符的个数，不需要像 select/poll 那样轮询扫描整个 socket 集合，大大提高了检测的效率。<br><img src="/img/content/netio/epoll.webp" srcset="/img/loading.gif" lazyload alt="epoll.webp"></p>
+<h4 id="具体实现-1"><a href="#具体实现-1" class="headerlink" title="具体实现"></a>具体实现</h4><p>具体实现可以看<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/361750240">图解 | 深入揭秘 epoll 是如何实现 IO 多路复用的！</a>与<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/393747291">深入理解 Linux 的 epoll 机制</a>。上面我们知道，sock_def_readable回调poll中的回调函数p_poll_callback，在 ep_poll_callback 根据等待任务队列项上的额外的 base 指针可以找到 epitem， 进而也可以找到 eventpoll对象。<br>首先它做的第一件事就是<strong>把自己的 epitem 添加到 epoll 的就绪队列中</strong>。<br>接着它又会查看 eventpoll 对象上的等待队列里是否有等待项（epoll_wait 执行的时候会设置）。<br>如果没执行软中断的事情就做完了。如果有等待项，那就查找到等待项里设置的回调函数。调用 wake_up_locked() =&gt; __wake_up_locked() =&gt; __wake_up_common。在 __wake_up_common里， 调用 curr-&gt;func。 这里的 func 是在 epoll_wait 是传入的 default_wake_function 函数。在default_wake_function 中找到等待队列项里的进程描述符，然后唤醒之。<br><img src="/img/content/netio/epoll%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B.png" srcset="/img/loading.gif" lazyload alt="epoll整体流程.png"></p>
+<h2 id="Signal-Driven-I-O"><a href="#Signal-Driven-I-O" class="headerlink" title="Signal-Driven I/O"></a>Signal-Driven I/O</h2><p><img src="/img/content/netio/%E4%BF%A1%E5%8F%B7%E9%A9%B1%E5%8A%A8.png" srcset="/img/loading.gif" lazyload alt="信号驱动.png"><br>这种信号驱动的I/O并不常见，从图片可以看到它第一次发起system call不会阻塞进程，kernel的数据就绪后会发送一个signal给进程。进程发起真正的IO操作。</p>
+<h2 id="同步的概念"><a href="#同步的概念" class="headerlink" title="同步的概念"></a>同步的概念</h2><p>上面的Blocking IO,Non-Blocking I/O,I/O Multiplexing都属于同步IO。这里同步的概念主要是指获取数据时，由用户线程调用recvform将数据从内核空间拷贝到用户空间，从内核空间拷贝到用户空间不是由内核自动完成的。其中，Blocing IO是获取数据开始，就一直阻塞。Non-Blocking I/O是不断请求，请求到了再将数据从内核空间拷到用户空间。I/O Multiplexing是内核将数据复制到内核缓冲区【读取文件为pageCache,读取网络数据为socket缓冲区】之后，通知用户线程，用户线程调用recvform将数据从内核空间拷到用户空间。<br><img src="/img/content/netio/%E5%90%8C%E6%AD%A5%E5%BC%82%E6%AD%A5.png" srcset="/img/loading.gif" lazyload alt="同步异步.png"></p>
+<h2 id="Asynchronous-I-O"><a href="#Asynchronous-I-O" class="headerlink" title="Asynchronous I/O"></a>Asynchronous I/O</h2><p><img src="/img/content/netio/%E5%BC%82%E6%AD%A5IO.png" srcset="/img/loading.gif" lazyload alt="异步IO.png"></p>
+<h3 id="绕过内核空间向用户空间复制的手段"><a href="#绕过内核空间向用户空间复制的手段" class="headerlink" title="绕过内核空间向用户空间复制的手段"></a>绕过内核空间向用户空间复制的手段</h3><p><img src="/img/content/netio/IO%E6%95%B0%E6%8D%AE%E6%8B%B7%E8%B4%9D.jpg" srcset="/img/loading.gif" lazyload alt="IO数据拷贝.jpg"><br>从上文我们知道，同步是用户调用recv_from时，内核将数据从数据空间复制到用户空间。而异步就是用户直接发一个read的请求后就不管了，内核将数据准备好，拷贝到用户空间后再通知用户。但我们知道，之所以要recvfrom来获取数据，主要是当数据已经从网卡拷贝到内核缓冲区的时候，这时候并不知道该往哪个用户空间去拷贝。我们再来看一下recv_from函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">ssize_t</span> <span class="hljs-title function_">recvfrom</span><span class="hljs-params">(</span><br><span class="hljs-params">    <span class="hljs-type">int</span> sockfd, <span class="hljs-type">void</span> *buf, <span class="hljs-type">size_t</span> len, <span class="hljs-type">int</span> flags,</span><br><span class="hljs-params">    <span class="hljs-keyword">struct</span> sockaddr *src_addr, <span class="hljs-type">socklen_t</span> *addrlen</span><br><span class="hljs-params">)</span>;<br></code></pre></td></tr></table></figure>
+<p>其中，参数<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/buf/1057129?fromModule=lemma_inlink">buf</a>指向的<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4/22010756?fromModule=lemma_inlink">内存空间</a>。回到异步上来，要想在没有地址的时候，就能将数据拷贝到用户空间，那么最简单的方法就是去掉内核空间或者共享内核空间与用户空间。上文我们说道，Linux分离内核空间跟用户空间的主要目的在于安全，而实现异步要打破这种设计。只能说是安全与效率之间的平衡。我们先来看绕到内核空间向用户空间复制数据的手段都有哪些。</p>
+<h4 id="MMAP"><a href="#MMAP" class="headerlink" title="MMAP"></a>MMAP</h4><p>mmap 即 memory map，也就是内存映射。<br>mmap 是一种内存映射文件的方法，即将一个文件或者其它对象映射到进程的地址空间，实现文件磁盘地址和进程虚拟地址空间中一段虚拟地址的一一对映关系。实现这样的映射关系后，进程就可以采用指针的方式读写操作这一段内存，而系统会自动回写脏页面到对应的文件磁盘上，即完成了对文件的操作而不必再调用 read、write 等系统调用函数。相反，内核空间对这段区域的修改也直接反映用户空间，从而可以实现不同进程间的文件共享。如下图所示：<br><img src="/img/content/netio/mmp%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5.png" srcset="/img/loading.gif" lazyload alt="mmp基础概念.png"><br>mmap 也是一种零拷贝技术，其 I/O 模型如下图所示：<br><img src="/img/content/netio/mmap.jpg" srcset="/img/loading.gif" lazyload alt="mmap.jpg"></p>
+<h4 id="Direct-IO"><a href="#Direct-IO" class="headerlink" title="Direct IO"></a>Direct IO</h4><p>直接IO就是在应用层Buffer和磁盘之间直接建立通道。这样在读写数据的时候就能够减少上下文切换次数，同时也能够减少数据拷贝次数，从而提高效率。</p>
+<h5 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h5><p>a、应用层直接操作磁盘减少了上下文切换和数据拷贝的开销，速度更快。<br>b、数据直接缓存在应用层，应用能够更加灵活的操作数据。</p>
+<h5 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h5><p>a、系统基本不缓存数据，因此应用需要合理的读写数据，否则会导致性能很差。<br>b、所有缓存都由应用层直接控制，增加了应用层的实现复杂度，对开发者能力要求很高。<br>c、O_DIRECT也不能确保数据每次写入的时候同步写入磁盘，因此如果需要数据同步写入磁盘还需要手工设置O_SYNC标识或者手工调用fsync方法。</p>
+<h3 id="linux-AIO"><a href="#linux-AIO" class="headerlink" title="linux AIO"></a>linux AIO</h3><p><img src="/img/content/netio/Linux%E5%8E%9F%E7%94%9FAIO.png" srcset="/img/loading.gif" lazyload alt="Linux原生AIO.png"><br>Linux 原生 AIO 处理流程：</p>
+<ul>
+<li>当应用程序调用 io_submit 系统调用发起一个异步 IO 操作后，会向内核的 IO 任务队列中添加一个 IO 任务，并且返回成功。</li>
+<li>内核会在后台处理 IO 任务队列中的 IO 任务，然后把处理结果存储在 IO 任务中。</li>
+<li>应用程序可以调用 io_getevents 系统调用来获取异步 IO 的处理结果，如果 IO 操作还没完成，那么返回失败信息，否则会返回 IO 处理结果。</li>
+</ul>
+<p>从上面的流程可以看出，Linux 的异步 IO 操作主要由两个步骤组成：</p>
+<ul>
+<li><ol>
+<li>调用 io_submit 函数发起一个异步 IO 操作。</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>调用 io_getevents 函数获取异步 IO 的结果。</li>
+</ol>
+</li>
+</ul>
+<p>linux native aio对使用O_DIRECT标识打开的文件会造成如下限制（如果无O_DIRECT标识，在调用io_submit时，会同步完成IO操作）：</p>
+<ul>
+<li>AIO方式读写文件时，无法利用操作系统对文件的缓存，只能从磁盘读写</li>
+<li>读写缓冲区的地址、内容的大小、文件偏移必须是扇区的倍数（通常是512字节）</li>
+</ul>
+<p>io_getevents获取IO结果使用的是Direct IO<br>由于Linux原生AIO使用Direct IO,所以性能比较差。</p>
+<h3 id="io-uring"><a href="#io-uring" class="headerlink" title="io_uring"></a>io_uring</h3><p>io_uring 为了减少或者摒弃系统调用，采用了用户态与内核态 共享内存 的方式来通信。如下图所示：<br><img src="/img/content/netio/iouring%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B.png" srcset="/img/loading.gif" lazyload alt="iouring整体流程.png"><br>I/O uring采用mmap来进行内存共享<br>用户进程可以向 共享内存 提交要发起的 I/O 操作，而内核线程可以从 共享内存 中读取 I/O 操作，并且进行相关的 I/O 操作。<br>用户态对共享内存进行读写操作是不需要使用系统调用的，所以不会发生上下文切换的情况。<br>每个 io_uring 实例都有 两个环形队列（ring），在内核和应用程序之间共享：</p>
+<ol>
+<li>提交队列：submission queue (SQ)</li>
+<li>完成队列：completion queue (CQ)</li>
+</ol>
+<p><img src="/img/content/netio/iouring.png" srcset="/img/loading.gif" lazyload alt="iouring.png"><br>IO_URING的整体流程为：<br><img src="/img/content/netio/iouring_detail.png" srcset="/img/loading.gif" lazyload alt="iouring_detail.png"></p>
+<h1 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档:"></a>参考文档:</h1><h2 id="通知socket"><a href="#通知socket" class="headerlink" title="通知socket"></a>通知socket</h2><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/256428917">图解Linux网络包接收过程</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/353850099">深入理解高性能网络开发路上的绊脚石 - 同步阻塞网络 IO</a><br><a target="_blank" rel="noopener" href="https://abcdxyzk.github.io/blog/2015/06/12/kernel-net-socket-io/">Socket层实现系列 — I/O事件及其处理函数</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/399651675">Linux fd 系列 — socket fd 是什么？</a><br><a target="_blank" rel="noopener" href="http://shengrang.net/2021/12/19/poll-note/">poll 笔记</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/367591714">深入浅出理解select、poll、epoll的实现</a></p>
+<h2 id="连接的建立-1"><a href="#连接的建立-1" class="headerlink" title="连接的建立"></a>连接的建立</h2><p><a target="_blank" rel="noopener" href="https://xiaolincoding.com/os/8_network_system/selete_poll_epoll.html">I/O 多路复用：select/poll/epoll</a></p>
+<h2 id="IO模型-1"><a href="#IO模型-1" class="headerlink" title="IO模型"></a>IO模型</h2><p><a target="_blank" rel="noopener" href="https://wiyi.org/linux-io-model.html">带你彻底理解Linux五种I/O模型</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/393747291">深入理解 Linux 的 epoll 机制</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/361750240">图解 | 深入揭秘 epoll 是如何实现 IO 多路复用的！</a><br><a target="_blank" rel="noopener" href="https://rebootcat.com/2020/09/26/epoll_cookbook/">Epoll原理深入分析</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/364819119">Linux原生异步IO原理与实现（Native AIO）</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/380726590">一篇文章带你读懂 io_uring 的接口与实现</a></p>
+<h2 id="内核空间与用户空间"><a href="#内核空间与用户空间" class="headerlink" title="内核空间与用户空间"></a>内核空间与用户空间</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/sparkdev/p/8410350.html">Linux 内核空间与用户空间</a></p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%9E%B6%E6%9E%84/" class="category-chain-item">架构</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%90%8C%E6%AD%A5/">#同步</a>
+      
+        <a href="/tags/%E5%BC%82%E6%AD%A5/">#异步</a>
+      
+        <a href="/tags/%E9%98%BB%E5%A1%9E/">#阻塞</a>
+      
+        <a href="/tags/%E9%9D%9E%E9%98%BB%E5%A1%9E/">#非阻塞</a>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C/">#网络</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>网络系统与IO模型</div>
+      <div>http://byj.zzmd.tech/2023/05/10/网络系统与IO模型/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>白玉京</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年5月10日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/01/29/%E5%A4%9A%E7%BA%A7%E5%88%86%E6%B5%81/" title="多级分流">
+                        <span class="hidden-mobile">多级分流</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div class="disqus" style="width:100%">
+    <div id="disqus_thread"></div>
+    
+      <script type="text/javascript">
+        var disqus_config = function() {
+          this.page.url = 'http://byj.zzmd.tech/2023/05/10/%E7%BD%91%E7%BB%9C%E7%B3%BB%E7%BB%9F%E4%B8%8EIO%E6%A8%A1%E5%9E%8B/';
+          this.page.identifier = '/2023/05/10/%E7%BD%91%E7%BB%9C%E7%B3%BB%E7%BB%9F%E4%B8%8EIO%E6%A8%A1%E5%9E%8B/';
+        };
+        Fluid.utils.loadComments('#disqus_thread', function() {
+          var d = document, s = d.createElement('script');
+          s.src = '//' + 'fluid' + '.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', new Date());
+          (d.head || d.body).appendChild(s);
+        });
+      </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+  </div>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?ce2e798b1c31297dd7ece0242cac0a2b";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+    <!-- Google gtag.js -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript('https://www.googletagmanager.com/gtag/js?id=G-MBPFGDQNG5', function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-MBPFGDQNG5');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
