@@ -1,0 +1,900 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/zzmd.png">
+  <link rel="icon" href="/img/zzmd.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="白玉京">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="登录态大家都知道，HTTP是一个无状态的协议，我们站在服务器这一端，一个用户请求过来怎么判断他有没有登录呢？在验证用户名和密码之后，我们可以发给客户端一个凭证(isLogin &#x3D; true)，如果请求中有这个凭证，那么他就是登陆之后的用户。 cookie和session的区别在于，凭证的存储位置。换言之，如果凭证存储在客户端，那就是cookie。如果凭证存储在服务端，那就是session。 Coo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="单点登录">
+<meta property="og:url" content="http://byj.zzmd.tech/2023/05/24/%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95/index.html">
+<meta property="og:site_name" content="白玉京">
+<meta property="og:description" content="登录态大家都知道，HTTP是一个无状态的协议，我们站在服务器这一端，一个用户请求过来怎么判断他有没有登录呢？在验证用户名和密码之后，我们可以发给客户端一个凭证(isLogin &#x3D; true)，如果请求中有这个凭证，那么他就是登陆之后的用户。 cookie和session的区别在于，凭证的存储位置。换言之，如果凭证存储在客户端，那就是cookie。如果凭证存储在服务端，那就是session。 Coo">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://byj.zzmd.tech/img/content/login/login.jpg">
+<meta property="article:published_time" content="2023-05-24T06:03:59.000Z">
+<meta property="article:modified_time" content="2023-05-24T06:13:36.950Z">
+<meta property="article:author" content="白玉京">
+<meta property="article:tag" content="Cookie">
+<meta property="article:tag" content="Session">
+<meta property="article:tag" content="Token">
+<meta property="article:tag" content="单点登录">
+<meta property="article:tag" content="springboot">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://byj.zzmd.tech/img/content/login/login.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>单点登录 - 白玉京</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"byj.zzmd.tech","root":"/","version":"1.9.0","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":"ce2e798b1c31297dd7ece0242cac0a2b","google":null,"gtag":"G-MBPFGDQNG5","tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>白玉京</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/content/login/login_banner.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="单点登录"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-05-24 14:03" pubdate>
+          2023年5月24日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          74 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">单点登录</h1>
+            
+            <div class="markdown-body">
+              
+              <h1 id="登录态"><a href="#登录态" class="headerlink" title="登录态"></a>登录态</h1><p>大家都知道，HTTP是一个无状态的协议，我们站在服务器这一端，一个用户请求过来怎么判断他有没有登录呢？<br>在验证用户名和密码之后，我们可以发给客户端一个凭证(isLogin = true)，如果请求中有这个凭证，那么他就是登陆之后的用户。 cookie和session的区别在于，凭证的存储位置。换言之，如果凭证存储在客户端，那就是cookie。如果凭证存储在服务端，那就是session。</p>
+<h2 id="Cookie"><a href="#Cookie" class="headerlink" title="Cookie"></a>Cookie</h2><p>cookie其实是HTTP头部的一个字段，本质上可以存储任何信息，早年用于实现登录态，所以有了一层别的含义——客户端存储。把凭证存储到cookie中，每次浏览器的请求会自动带上cookie里的凭证，方便服务端校验，就像下面这样：<br><img src="/img/content/login/cookie.png" srcset="/img/loading.gif" lazyload alt="cookie.png"><br>客户端请求调用<code>/login</code>接口，服务端验证通过后给客户端颁发的登录凭证<code>isLogin=true</code><br>但是这样面临的问题是：<br>用户本人可以通过修改document.cookie=”isLogin = true”伪造登陆凭证。</p>
+<h2 id="Session"><a href="#Session" class="headerlink" title="Session"></a>Session</h2><p>session本意是指客户端与服务器的会话状态，由于凭证存储到了服务端，后来也把这些存在服务端的信息称为session。<br>现在服务器决定自己维护登录状态，仅发给客户端一个key，然后在自己维护一个key-value表，如果请求中有key，并且在表中可以找到对应的value，则视为合法：<br><img src="/img/content/login/session.png" srcset="/img/loading.gif" lazyload alt="session.png"><br>sessionid是一个会话的key，客户端请求调用<code>/login</code>接口服务器端生成一个session，有一个sessionid和它对应。tomcat生成的sessionid叫做jsessionid。<br>session在访问tomcat服务器HttpServletRequest的getSession(true)的时候创建，tomcat的ManagerBase类提供创建sessionid的方法：随机数+时间+jvmid；<br>存储在服务器的内存中，tomcat的StandardManager类将session存储在内存中，也可以持久化到file，数据库，memcache，redis等。<br>服务端将seesion-id返回到客户端，客户端只保存sessionid到cookie中，而不会保存session，session销毁只能通过invalidate或超时，关掉浏览器并不会关闭session。<br>这样即使客户端自行修改了sessionID，在服务端那里没有对应的记录，也无法获取数据。<br>session是一个好的解决方案，但是他的问题是：如果存在多个服务器如负载均衡时，每个服务器的状态表必须同步，默认保存在内存中，负载均衡每分配到一个新机器就得重新登录。解决方法就是抽离出来统一管理，如使用Redis等服务。</p>
+<h2 id="Token"><a href="#Token" class="headerlink" title="Token"></a>Token</h2><p>cookie方法不需要服务器存储，但是凭证容易被伪造，那有什么办法判断凭证是否伪造呢？<br>和HTTPS一样，我们可以使用签名的方式帮助服务器校验凭证。<br>JSON Web Token（简称JWT）是以JSON格式存储信息的Token，其结构图如下：<br><img src="/img/content/login/jwt.png" srcset="/img/loading.gif" lazyload alt="jwt.png"><br>JWT由3部分构成：头部，负载和签名。<br>根据<a target="_blank" rel="noopener" href="https://jwt.io/introduction/">官网介绍</a>：</p>
+<ol>
+<li>头部存储Token的类型和签名算法（上图中，类型是jwt，加密算法是HS256）</li>
+<li>负载是Token要存储的信息（上图中，存储了用户姓名和昵称信息）</li>
+<li>签名是由指定的算法，将转义后的头部和负载，加上密钥一同加密得到的。</li>
+</ol>
+<p>最后将这三部分用.号连接，就可以得到了一个Token了。<br>使用JWT维护登陆态，服务器不再需要维护状态表，他仅给客户端发送一个加密的数据token，每次请求都带上这个加密的数据，再解密验证是否合法即可。由于是加密的数据，即使用户可以修改，命中几率也很小。<br><img src="/img/content/login/token.png" srcset="/img/loading.gif" lazyload alt="token.png"><br>客户端如何存储token呢？</p>
+<ol>
+<li><p>存在cookie中，虽然设置HttpOnly可以有效防止XSS攻击中token被窃取，但是也就意味着客户端无法获取token来设置CORS头部。</p>
+</li>
+<li><p>存在sessionStorage或者localStorage中，可以设置头部解决跨域资源共享问题，同时也可以防止CSRF，但是就需要考虑XSS的问题防止凭证泄露。</p>
+<h1 id="单点登录"><a href="#单点登录" class="headerlink" title="单点登录"></a>单点登录</h1><p>举个场景，假设我们的系统被切割为N个部分：商城、论坛、直播、社交…… 如果用户每访问一个模块都要登录一次，那么用户将会疯掉， 为了优化用户体验，我们急需一套机制将这N个系统的认证授权互通共享，让用户在一个系统登录之后，便可以畅通无阻的访问其它所有系统。<br>单点登录——就是为了解决这个问题而生！<br>简而言之，单点登录可以做到：在多个互相信任的系统中，用户只需登录一次，就可以访问所有系统。</p>
+<h2 id="共享cookie同步会话"><a href="#共享cookie同步会话" class="headerlink" title="共享cookie同步会话"></a>共享cookie同步会话</h2><p>首先我们分析一下多个系统之间，为什么无法同步登录状态？</p>
+</li>
+<li><p>前端的 Token 无法在多个系统下共享。</p>
+</li>
+<li><p>后端的 Session 无法在多个系统间共享。</p>
+</li>
+</ol>
+<p>所以单点登录第一招，就是对症下药：</p>
+<ol>
+<li>使用 共享Cookie 来解决 Token 共享问题。</li>
+<li>使用 Redis 来解决 Session 共享问题。</li>
+</ol>
+<p>所谓共享Cookie，就是主域名Cookie在二级域名下的共享，举个例子：写在父域名stp.com下的Cookie，在s1.stp.com、s2.stp.com等子域名都是可以共享访问的。<br><img src="/img/content/login/cookie-sso.gif" srcset="/img/loading.gif" lazyload alt="cookie-sso.gif"></p>
+<h2 id="URL重定向传播会话"><a href="#URL重定向传播会话" class="headerlink" title="URL重定向传播会话"></a>URL重定向传播会话</h2><p>如上，我们使用简单的步骤实现了同域下的单点登录，但这种模式有着一个不小的限制：</p>
+<blockquote>
+<p>所有子系统的域名，必须同属一个父级域名</p>
+</blockquote>
+<p>如果我们的子系统在完全不同的域名下，那么可以使用URL重定向传播会话。</p>
+<p><img src="/img/content/login/url-sso.gif" srcset="/img/loading.gif" lazyload alt="url-sso.gif"><br>1.用户在 子系统 点击 [登录] 按钮。<br>2.用户跳转到子系统登录接口 client1.com/sso/login，并携带 back参数 记录初始页面URL。<br>形如：<a target="_blank" rel="noopener" href="http://client1.com/sso/login?back=xxx">http://client1.com/sso/login?back=xxx</a><br>3.子系统检测到此用户尚未登录(前端传过来的token,存储在cookie或者localstorage中，查看sso-Redis是否有token key,无则代表未登录)，再次将其重定向至SSO认证中心，并携带redirect参数记录子系统的登录页URL。<br>形如：<a target="_blank" rel="noopener" href="http://server.com/sso/auth?redirect=xxx?back=xxx">http://server.com/sso/auth?redirect=xxx?back=xxx</a><br>4.用户进入了 SSO认证中心 的登录页面，开始登录。<a target="_blank" rel="noopener" href="http://server.com/sso/auth?redirect=xxx?back=xxx">http://server.com/sso/auth?redirect=xxx?back=xxx</a><br>5.用户 输入账号密码 并 登录成功，SSO认证中心再次将用户重定向至子系统的登录接口/sso/login，并携带ticket码参数。<br>形如：<a target="_blank" rel="noopener" href="http://client1.com/sso/login?back=xxx&ticket=xxxxxxxxx">http://client1.com/sso/login?back=xxx&amp;ticket=xxxxxxxxx</a><br>6.子系统根据 ticket码 从 SSO-Redis 中获取账号id，并在子系统登录此账号会话。<br>7.子系统将用户再次重定向至最初始的 back 页面。</p>
+<p>用户登录client2.com/sso/login，在进行到第5步时，因为server.com cookie保存了token.所以不用再输入。</p>
+<h2 id="Http请求获取会话"><a href="#Http请求获取会话" class="headerlink" title="Http请求获取会话"></a>Http请求获取会话</h2><p>我们先来分析一下，当后端不使用共享 Redis 时，会对架构产生哪些影响：</p>
+<ol>
+<li>Client 端无法直连 Redis 校验 ticket，取出账号id。</li>
+<li>Client 端无法与 Server 端共用一套会话，需要自行维护子会话。</li>
+<li>由于不是一套会话，所以无法“一次注销，全端下线”，需要额外编写代码完成单点注销。</li>
+</ol>
+<p>解决方案：校验ticket不使用共享redis，可以使用http或者rcp调用来进行校验。</p>
+<h2 id="cors跨域"><a href="#cors跨域" class="headerlink" title="cors跨域"></a>cors跨域</h2><p>当客户端与服务端不在同一域中，需要进入跨域处理。<br>CORS 是一个 W3C 标准，全称叫做”跨域资源共享”（Cross-Origin resource sharing）； 在详细介绍 CORS 之前先简单介绍下什么是同源政策，这样才能了解到 CORS 的由来|必要性。</p>
+<h3 id="浏览器同源策略"><a href="#浏览器同源策略" class="headerlink" title="浏览器同源策略"></a>浏览器同源策略</h3><p>“同源政策”是浏览器安全的基石，目前所有浏览器都实行这个政策<br>所谓”同源”，是指以下三个相同:</p>
+<ul>
+<li>协议相同</li>
+<li>域名相同</li>
+<li>端口相同</li>
+</ul>
+<p>举个例子：</p>
+<table>
+<thead>
+<tr>
+<th>当前网址</th>
+<th>被请求页面地址</th>
+<th>是否跨域(不同源)</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="http://byj.zzmd.tech/page.html">http://byj.zzmd.tech/page.html</a></td>
+<td><a href="http://byj.zzmd.tech/main.html">http://byj.zzmd.tech/main.html</a></td>
+<td>否</td>
+<td>同协议（http）、同域名（byj.zzmd.tech）、同端口（80）</td>
+</tr>
+<tr>
+<td><a href="http://byj.zzmd.tech/page.html">http://byj.zzmd.tech/page.html</a></td>
+<td><a href="https://byj.zzmd.tech/other.html">https://byj.zzmd.tech/other.html</a></td>
+<td>是</td>
+<td>协议不同（http 与 https）</td>
+</tr>
+<tr>
+<td><a href="http://byj.zzmd.tech/page.html">http://byj.zzmd.tech/page.html</a></td>
+<td><a target="_blank" rel="noopener" href="http://byj.zzmd.com/page.html">http://byj.zzmd.com/page.html</a></td>
+<td>是</td>
+<td>域名不同,一个tech域名，一个com域名</td>
+</tr>
+<tr>
+<td><a href="http://byj.zzmd.tech/page.html">http://byj.zzmd.tech/page.html</a></td>
+<td><a href="http://byj.zzmd.tech:8090/other.html">http://byj.zzmd.tech:8090/other.html</a></td>
+<td>是</td>
+<td>端口不同（80 与 8090）</td>
+</tr>
+</tbody></table>
+<h3 id="CORS-两类请求"><a href="#CORS-两类请求" class="headerlink" title="CORS 两类请求"></a>CORS 两类请求</h3><p>浏览器将 CORS 请求分为两类：<strong>简单请求</strong>和<strong>非简单请求</strong>。</p>
+<h4 id="简单请求"><a href="#简单请求" class="headerlink" title="简单请求"></a>简单请求</h4><p>只要同时满足以下两大条件，就属于简单请求：</p>
+<ul>
+<li>请求方法是以下三种类型之一 <ul>
+<li>HEAD</li>
+<li>GET</li>
+<li>POST</li>
+</ul>
+</li>
+<li>HTTP 头信息不超出以下几种字段 <ul>
+<li>Accept</li>
+<li>Accept-Language</li>
+<li>Content-Language</li>
+<li>Content-Type: 只限于 application/x-www-form-urlencoded、multipart/form-data、text/plain 三者之一</li>
+</ul>
+</li>
+</ul>
+<p>凡是不同时满足以上两个条件的就属于非简单请求。<br>如下就是一个 CORS 简单请求：<br><img src="/img/content/login/cors-simple.png" srcset="/img/loading.gif" lazyload alt="cors-simple.png"></p>
+<h4 id="非简单请求"><a href="#非简单请求" class="headerlink" title="非简单请求"></a>非简单请求</h4><p>非简单请求是那种对服务器有特殊要求的请求，比如请求方法是 PUT 或 DELETE，或者 Content-Type 字段类型是 application/json。<br>非简单请求的 CORS 请求的一大特点，就是会在正式通信前增加一次 HTTP 查询请求，称为<a href="https://link.juejin.cn/?target=https://web.dev/cross-origin-resource-sharing/?utm_source=devtools%23preflight-requests-for-complex-http-calls">“预检”请求</a>（Preflight request）。该”预检”请求的方法为 OPTIONS，”预检”请求的使用，可以避免跨域请求对服务器的用户数据产生未预期的影响。<br>如下是一个需要执行预检请求的 HTTP 请求：<br><img src="/img/content/login/cors-not-simple.png" srcset="/img/loading.gif" lazyload alt="cors-not-simple.png"></p>
+<h2 id="Spring-Boot-解决跨域问题"><a href="#Spring-Boot-解决跨域问题" class="headerlink" title="Spring Boot 解决跨域问题"></a>Spring Boot 解决跨域问题</h2><h3 id="通过-Filter-过滤器手动设置响应头"><a href="#通过-Filter-过滤器手动设置响应头" class="headerlink" title="通过 Filter 过滤器手动设置响应头"></a>通过 Filter 过滤器手动设置响应头</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> lombok.extern.slf4j.Slf4j;<br><span class="hljs-keyword">import</span> org.springframework.stereotype.Component;<br><br><span class="hljs-keyword">import</span> javax.servlet.*;<br><span class="hljs-keyword">import</span> javax.servlet.annotation.WebFilter;<br><span class="hljs-keyword">import</span> javax.servlet.http.HttpServletResponse;<br><span class="hljs-keyword">import</span> java.io.IOException;<br><br><span class="hljs-meta">@Component</span><br>    <span class="hljs-meta">@Slf4j</span><br>    <span class="hljs-meta">@WebFilter(urlPatterns = &#123;&quot;/*&quot;&#125;, filterName = &quot;corsFilter&quot;)</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CorsFilter</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Filter</span> &#123;<br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">init</span><span class="hljs-params">(FilterConfig filterConfig)</span> <span class="hljs-keyword">throws</span> ServletException &#123;<br>            log.info(<span class="hljs-string">&quot;启动跨域过滤器&quot;</span>);<br>        &#125;<br><br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">doFilter</span><span class="hljs-params">(ServletRequest request, ServletResponse resp, FilterChain chain)</span> <span class="hljs-keyword">throws</span> IOException, ServletException &#123;<br>            <span class="hljs-type">HttpServletResponse</span> <span class="hljs-variable">response</span> <span class="hljs-operator">=</span> (HttpServletResponse) resp;<br>            <span class="hljs-comment">// 手动设置响应头解决跨域访问</span><br>            response.setHeader(<span class="hljs-string">&quot;Access-Control-Allow-Origin&quot;</span>, <span class="hljs-string">&quot;*&quot;</span>);<br>            response.setHeader(<span class="hljs-string">&quot;Access-Control-Allow-Methods&quot;</span>, <span class="hljs-string">&quot;POST, PUT, GET, OPTIONS, DELETE&quot;</span>);<br>            <span class="hljs-comment">// 设置过期时间</span><br>            response.setHeader(<span class="hljs-string">&quot;Access-Control-Max-Age&quot;</span>, <span class="hljs-string">&quot;86400&quot;</span>);<br>            response.setHeader(<span class="hljs-string">&quot;Access-Control-Allow-Headers&quot;</span>, <span class="hljs-string">&quot;Origin, X-Requested-With, Content-Type, Accept, Authorization, uuid&quot;</span>);<br>            <span class="hljs-comment">// 支持 HTTP 1.1</span><br>            response.setHeader(<span class="hljs-string">&quot;Cache-Control&quot;</span>, <span class="hljs-string">&quot;no-cache, no-store, must-revalidate&quot;</span>);<br>            <span class="hljs-comment">// 支持 HTTP 1.0. response.setHeader(&quot;Expires&quot;, &quot;0&quot;);</span><br>            response.setHeader(<span class="hljs-string">&quot;Pragma&quot;</span>, <span class="hljs-string">&quot;no-cache&quot;</span>);<br>            <span class="hljs-comment">// 编码</span><br>            response.setCharacterEncoding(<span class="hljs-string">&quot;UTF-8&quot;</span>);<br>            chain.doFilter(request, resp);<br>        &#125;<br><br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">destroy</span><span class="hljs-params">()</span> &#123;<br>            log.info(<span class="hljs-string">&quot;销毁跨域过滤器&quot;</span>);<br>        &#125;<br>    &#125;<br><br></code></pre></td></tr></table></figure>
+<h3 id="使用-CrossOrigin-注解（局部跨域）"><a href="#使用-CrossOrigin-注解（局部跨域）" class="headerlink" title="使用 @CrossOrigin 注解（局部跨域）"></a>使用 @CrossOrigin 注解（局部跨域）</h3><p>@CrossOrigin 注解源码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Target(&#123;ElementType.TYPE, ElementType.METHOD&#125;)</span><br><span class="hljs-meta">@Retention(RetentionPolicy.RUNTIME)</span><br><span class="hljs-meta">@Documented</span><br><span class="hljs-keyword">public</span> <span class="hljs-meta">@interface</span> CrossOrigin &#123;<br>    <br>    <span class="hljs-meta">@AliasFor(&quot;origins&quot;)</span><br>    String[] value() <span class="hljs-keyword">default</span> &#123;&#125;;<br><br>    <span class="hljs-meta">@AliasFor(&quot;value&quot;)</span><br>    String[] origins() <span class="hljs-keyword">default</span> &#123;&#125;;<br><br>    String[] allowedHeaders() <span class="hljs-keyword">default</span> &#123;&#125;;<br><br>    String[] exposedHeaders() <span class="hljs-keyword">default</span> &#123;&#125;;<br><br>    RequestMethod[] methods() <span class="hljs-keyword">default</span> &#123;&#125;;<br><br>    String <span class="hljs-title function_">allowCredentials</span><span class="hljs-params">()</span> <span class="hljs-keyword">default</span> <span class="hljs-string">&quot;&quot;</span>;<br><br>    <span class="hljs-type">long</span> <span class="hljs-title function_">maxAge</span><span class="hljs-params">()</span> <span class="hljs-keyword">default</span> -<span class="hljs-number">1L</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<p>使用 @CrossOrigin 注解：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@CrossOrigin(origins = &quot;*&quot;, allowedHeaders = &quot;*&quot;, maxAge = 86400)</span><br><span class="hljs-meta">@PostMapping(&quot;/login&quot;)</span><br><span class="hljs-keyword">public</span> String <span class="hljs-title function_">login</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> User user)</span> &#123;<br>	TODO..<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<p>不过通过 @CrossOrigin 注解的源代码注定了它只能针对单个接口进行跨域配置，即局部跨域。虽然它比如上的 Filter 过滤器更简便，但这明显不是我们想要的，实际开发中也很少使用该注解。</p>
+<h3 id="实现-WebMvcConfigurer-接口"><a href="#实现-WebMvcConfigurer-接口" class="headerlink" title="实现 WebMvcConfigurer 接口"></a>实现 WebMvcConfigurer 接口</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;<br><span class="hljs-keyword">import</span> org.springframework.web.servlet.config.annotation.CorsRegistry;<br><span class="hljs-keyword">import</span> org.springframework.web.servlet.config.annotation.WebMvcConfigurer;<br><br><span class="hljs-meta">@Configuration</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WebMvcConfiguration</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">WebMvcConfigurer</span> &#123;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addCorsMappings</span><span class="hljs-params">(CorsRegistry registry)</span> &#123;<br>        registry.addMapping(<span class="hljs-string">&quot;/**&quot;</span>)<br>            	<span class="hljs-comment">// 表明允许哪些域访问, 简单点可为 *</span><br>                .allowedOrigins(<span class="hljs-string">&quot;http://localhost:3000&quot;</span>)<br>                .allowedHeaders(<span class="hljs-string">&quot;*&quot;</span>)<br>                .allowedMethods(<span class="hljs-string">&quot;*&quot;</span>)<br>            	<span class="hljs-comment">// allowCredentials(true): 表示附带身份凭证</span><br>            	<span class="hljs-comment">// 一旦使用 allowCredentials(true) 方法，则 allowedOrigins(&quot;*&quot;) 需要指明特定的域，而不能是 *</span><br>                .allowCredentials(<span class="hljs-literal">true</span>)<br>                .maxAge(<span class="hljs-number">86400</span>);<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<p>以上这种方式在没有定义拦截器（Interceptor）的时候，使用起来一切正常，但如果你有一个全局的拦截器，比如检测用户登录的拦截器：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AuthenticationInterceptor</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">HandlerInterceptor</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">preHandle</span><span class="hljs-params">(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object object)</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>        <span class="hljs-comment">// 从 http 请求头中取出 token</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">token</span> <span class="hljs-operator">=</span> httpServletRequest.getHeader(<span class="hljs-string">&quot;token&quot;</span>);<br>        <span class="hljs-comment">// 检查是否登录</span><br>        <span class="hljs-keyword">if</span> (token == <span class="hljs-literal">null</span>) &#123;<br>        	<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">InvalidTokenException</span>(ResultCode.INVALID_TOKEN.getCode(), <span class="hljs-string">&quot;登录信息已过期，请重新登录&quot;</span>);<br>        &#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>    <br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">postHandle</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView)</span> <span class="hljs-keyword">throws</span> Exception &#123;<br><br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">afterCompletion</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)</span> <span class="hljs-keyword">throws</span> Exception &#123;<br><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>当自定义拦截器返回 <strong>true</strong> 时，一切正常，但是当拦截器抛出异常（或者返回 <strong>false</strong>）时，后续的 CORS 配置将不会生效。</p>
+<h3 id="注入-CorsFilter-过滤器"><a href="#注入-CorsFilter-过滤器" class="headerlink" title="注入 CorsFilter 过滤器"></a>注入 CorsFilter 过滤器</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Configuration</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CorsFilterConfiguration</span> &#123;<br><br>    <span class="hljs-meta">@Bean</span><br>    <span class="hljs-keyword">public</span> CorsFilter <span class="hljs-title function_">corsFilter</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-comment">// 创建 CorsConfiguration 对象后添加配置</span><br>        <span class="hljs-type">CorsConfiguration</span> <span class="hljs-variable">corsConfiguration</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">CorsConfiguration</span>();<br>        <span class="hljs-comment">// 设置放行哪些原始域</span><br>        corsConfiguration.addAllowedOrigin(<span class="hljs-string">&quot;*&quot;</span>);<br>        <span class="hljs-comment">// 放行哪些原始请求头部信息</span><br>        corsConfiguration.addAllowedHeader(<span class="hljs-string">&quot;*&quot;</span>);<br>        <span class="hljs-comment">// 放行哪些请求方法</span><br>        corsConfiguration.addAllowedMethod(<span class="hljs-string">&quot;*&quot;</span>);<br><br>        <span class="hljs-comment">// 添加映射路径</span><br>        <span class="hljs-type">UrlBasedCorsConfigurationSource</span> <span class="hljs-variable">source</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">UrlBasedCorsConfigurationSource</span>();<br>        source.registerCorsConfiguration(<span class="hljs-string">&quot;/**&quot;</span>, corsConfiguration);<br><br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">CorsFilter</span>(source);<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>为什么过滤器可以避免冲突而拦截器不行呢？<br>因为过滤器依赖于 Servlet 容器，基于函数回调，它可以对几乎所有请求进行过滤。而拦截器是依赖于 Web 框架（如 Spring MVC 框架），基于反射通过 AOP 的方式实现的。</p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903844942446600">前端应该懂的登录态Cookie、Session、Token</a><br><a target="_blank" rel="noopener" href="https://juejin.cn/post/7053753080176705573#heading-12">教你四招实现 CORS 跨域资源共享</a></p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%BA%94%E7%94%A8/" class="category-chain-item">应用</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Cookie/">#Cookie</a>
+      
+        <a href="/tags/Session/">#Session</a>
+      
+        <a href="/tags/Token/">#Token</a>
+      
+        <a href="/tags/%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95/">#单点登录</a>
+      
+        <a href="/tags/springboot/">#springboot</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>单点登录</div>
+      <div>http://byj.zzmd.tech/2023/05/24/单点登录/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>白玉京</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年5月24日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/05/10/%E7%BD%91%E7%BB%9C%E7%B3%BB%E7%BB%9F%E4%B8%8EIO%E6%A8%A1%E5%9E%8B/" title="网络系统与IO模型">
+                        <span class="hidden-mobile">网络系统与IO模型</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div class="disqus" style="width:100%">
+    <div id="disqus_thread"></div>
+    
+      <script type="text/javascript">
+        var disqus_config = function() {
+          this.page.url = 'http://byj.zzmd.tech/2023/05/24/%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95/';
+          this.page.identifier = '/2023/05/24/%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95/';
+        };
+        Fluid.utils.loadComments('#disqus_thread', function() {
+          var d = document, s = d.createElement('script');
+          s.src = '//' + 'fluid' + '.disqus.com/embed.js';
+          s.setAttribute('data-timestamp', new Date());
+          (d.head || d.body).appendChild(s);
+        });
+      </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+  </div>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?ce2e798b1c31297dd7ece0242cac0a2b";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
+    </script>
+  
+
+  
+
+  
+    <!-- Google gtag.js -->
+    <script defer>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript('https://www.googletagmanager.com/gtag/js?id=G-MBPFGDQNG5', function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-MBPFGDQNG5');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
